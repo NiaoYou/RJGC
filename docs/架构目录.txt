@@ -1,0 +1,69 @@
+softeng-platform/
+├── backend/                     # 后端服务（FastAPI）
+│   ├── main.py                  # 应用主入口
+│   ├── db.py                    # MySQL数据库连接管理
+│   ├── config.py                # 全局配置（MySQL/OLLAMA地址）
+│   ├── models/                  # SQLAlchemy模型定义
+│   │   ├── user.py
+│   │   ├── requirement.py
+│   │   └── task.py
+│   ├── schemas/                 # Pydantic 请求/响应模型
+│   │   ├── user.py
+│   │   ├── requirement.py
+│   │   └── architecture.py
+│   ├── routers/                 # FastAPI 路由接口
+│   │   ├── user.py
+│   │   ├── requirement.py
+│   │   ├── architecture.py
+│   │   ├── codegen.py
+│   │   └── testing.py
+│   ├── services/                # 核心业务逻辑（调用大模型、本地API）
+│   │   ├── auth_service.py
+│   │   ├── requirement_logic.py
+│   │   ├── architecture_generator.py
+│   │   ├── code_generator.py
+│   │   └── test_generator.py
+│   └── utils/                   # 工具类、缓存、日志
+│       ├── logger.py
+│       └── redis_cache.py       # 可选：使用Redis作为Agent状态缓存
+
+├── frontend/                    # 前端项目（React + Tailwind）
+│   ├── public/
+│   ├── src/
+│   │   ├── components/          # 通用组件库（按钮/面板等）
+│   │   ├── pages/               # 页面：登录、项目列表、工作台
+│   │   ├── services/            # API调用封装
+│   │   └── App.tsx
+│   ├── .env
+│   └── package.json
+
+├── agents/                     # 多Agent系统逻辑
+│   ├── roles/                   # 每个角色的prompt模板
+│   │   ├── pm.txt
+│   │   ├── architect.txt
+│   │   └── tester.txt
+│   ├── engine.py                # Agent运行调度引擎（调用本地模型）
+│   └── chat_memory.py           # Agent对话历史管理
+
+├── data/                        # 生成的数据目录
+│   ├── requirements/            # 用户需求记录（json/md）
+│   ├── architecture/            # 架构设计结果（txt/json）
+│   ├── code_modules/            # 模块代码（自动生成）
+│   ├── test_reports/            # 测试执行结果
+│   └── exports/                 # 导出的文档（pdf/markdown）
+
+├── docs/                        # 项目说明文档
+│   ├── architecture.md
+│   ├── usecases.md
+│   ├── database-schema.png
+│   └── README.md
+
+├── scripts/                     # 实用脚本
+│   ├── init_db.py               # 初始化MySQL数据库
+│   ├── run_all.sh               # 一键运行所有模块（可选）
+│   └── test_all.sh              # 执行全部测试（可选）
+
+├── .env                         # 环境变量配置（MySQL、OLLAMA地址等）
+├── .gitignore
+├── requirements.txt             # Python依赖
+├── README.md
