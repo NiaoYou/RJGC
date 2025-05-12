@@ -15,3 +15,5 @@ class Requirement(Base):
     version = Column(String(20), default="v1.0")
     creator_id = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime, server_default=func.now())
+
+    # Define relationships if needed
