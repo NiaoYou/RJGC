@@ -1,14 +1,33 @@
-import React, { useState } from 'react';
-import LoginPage from './pages/LoginPage';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Login from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
+import ChatPage from './pages/ChatPage';
+import Layout from './components/Layout';
 
 function App() {
-  const [user, setUser] = useState(null);
-
   return (
-    <div>
-      {user ? <Dashboard username={user} /> : <LoginPage onLogin={setUser} />}
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route
+          path="/dashboard"
+          element={
+            <Layout>
+              <Dashboard user="管理员" />
+            </Layout>
+          }
+        />
+        <Route
+          path="/chat/:roleId"
+          element={
+            <Layout>
+              <ChatPage />
+            </Layout>
+          }
+        />
+      </Routes>
+    </Router>
   );
 }
 

@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function LoginPage({ onLogin }) {
+function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // 密码可见性状态
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate(); // 加这一行
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (username && password) {
-      onLogin(username);
+      // 登录成功后跳转到 dashboard
+      navigate('/dashboard');
     } else {
       alert('请输入用户名和密码');
     }
@@ -27,7 +30,6 @@ function LoginPage({ onLogin }) {
           style={styles.input}
         />
 
-        {/* 密码输入 + 可见按钮 */}
         <div style={styles.passwordWrapper}>
           <input
             type={showPassword ? 'text' : 'password'}
@@ -50,6 +52,8 @@ function LoginPage({ onLogin }) {
     </div>
   );
 }
+
+// 样式保持不变
 
 const styles = {
   page: {
