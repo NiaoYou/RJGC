@@ -1,8 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function AgentCard({ agent }) {
+  const navigate = useNavigate();
+
   return (
-    <div style={styles.card}>
+    <div
+      onClick={() => navigate(`/chat/${agent.path}`)}
+      style={styles.card}
+    >
       <div style={styles.icon}>{agent.icon}</div>
       <h3 style={styles.name}>{agent.name}</h3>
       <p style={styles.role}>{agent.role}</p>
@@ -12,28 +18,32 @@ function AgentCard({ agent }) {
 
 const styles = {
   card: {
-    background: '#fff',
+    background: '#ffffff',
     borderRadius: '12px',
     padding: '20px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-    transition: 'transform 0.2s',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+    transition: 'transform 0.2s, box-shadow 0.2s',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '10px',
+    cursor: 'pointer',
+    width: '220px',
+    textAlign: 'center',
   },
   icon: {
-    fontSize: '40px',
+    fontSize: '42px',
+    marginBottom: '12px',
   },
   name: {
-    margin: 0,
     fontSize: '18px',
+    fontWeight: 'bold',
     color: '#333',
+    margin: '4px 0',
   },
   role: {
-    color: '#666',
     fontSize: '14px',
-    textAlign: 'center',
+    color: '#666',
+    lineHeight: '1.5',
   },
 };
 
