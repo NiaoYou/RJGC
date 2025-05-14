@@ -2,17 +2,18 @@
 # @Date    ：2025/5/13 16:03
 # @Function: MySQL数据库连接管理
 
-from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy import create_engine
-from dotenv import load_dotenv
-import os
+from sqlalchemy.orm import sessionmaker, Session
+from config import DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME
 
-load_dotenv()
+# 构造 MySQL 连接字符串
+DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
-DB_URL = f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}?charset=utf8mb4"
-engine = create_engine(DB_URL)
+# 创建 SQLAlchemy 引擎和会话工厂
+engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# FastAPI 依赖项：获取数据库会话
 def get_db():
     db: Session = SessionLocal()
     try:
