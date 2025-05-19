@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 function AgentCard({ agent }) {
   const navigate = useNavigate();
 
+  const handleClick = () => {
+    navigate(`/chat/${agent.path}`);
+  };
+
   return (
-    <div
-      onClick={() => navigate(`/chat/${agent.path}`)}
-      style={styles.card}
-    >
+    <div style={styles.card} onClick={handleClick}>
       <div style={styles.icon}>{agent.icon}</div>
       <h3 style={styles.name}>{agent.name}</h3>
       <p style={styles.role}>{agent.role}</p>
@@ -18,32 +19,25 @@ function AgentCard({ agent }) {
 
 const styles = {
   card: {
-    background: '#ffffff',
+    background: '#fff',
     borderRadius: '12px',
-    padding: '20px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    cursor: 'pointer',
-    width: '220px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    padding: '24px',
     textAlign: 'center',
+    cursor: 'pointer',
+    transition: 'transform 0.2s',
   },
   icon: {
-    fontSize: '42px',
-    marginBottom: '12px',
+    fontSize: '36px',
+    marginBottom: '10px',
   },
   name: {
     fontSize: '18px',
-    fontWeight: 'bold',
-    color: '#333',
-    margin: '4px 0',
+    margin: '8px 0',
   },
   role: {
     fontSize: '14px',
-    color: '#666',
-    lineHeight: '1.5',
+    color: '#555',
   },
 };
 
