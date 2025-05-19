@@ -9,7 +9,7 @@ router = APIRouter()
 class RequirementRequest(BaseModel):
     topic: str
 
-@router.post("/generate", summary="生成模块需求")
+@router.post("/", summary="生成模块需求")
 def generate_module_requirement(request: RequirementRequest):
     try:
         result = generate_requirement(request.topic)
