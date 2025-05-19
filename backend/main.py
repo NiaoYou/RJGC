@@ -10,7 +10,9 @@ from routers import (
     requirement,
     architecture,
     codegen,
-    testing
+    testing,
+    requirementgen,
+    document
 )
 
 app = FastAPI(
@@ -34,6 +36,8 @@ app.include_router(requirement.router, prefix="/api/requirement", tags=["需求"
 app.include_router(architecture.router, prefix="/api/architecture", tags=["架构生成"])
 app.include_router(codegen.router, prefix="/api/codegen", tags=["代码生成"])
 app.include_router(testing.router, prefix="/api/test", tags=["测试生成"])
+app.include_router(requirementgen.router, prefix="/api/requirementgen", tags=["需求生成"])
+app.include_router(document.router, prefix="/api/document", tags=["文档管理"])
 
 # 启动提示
 @app.get("/")
