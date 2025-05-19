@@ -4,7 +4,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+import uvicorn # 可设置为通过python函数的启动形式运行fastapi
 from routers import (
     user,
     requirement,
@@ -44,7 +44,7 @@ app.include_router(document.router, prefix="/api/document", tags=["文档管理"
 def read_root():
     return {"message": "欢迎使用软工平台 API。请访问 /docs 查看接口文档"}
 
-
+# 以下仅供测试，避免fastapi阻止前端的跨域访问
 from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
@@ -54,3 +54,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+if __name__ == "__main__":
+    uvicorn.run("main:app",host="127.0.0.1",port=8000,reload=True)
