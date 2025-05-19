@@ -18,3 +18,5 @@ node_modules/.cache/
 node_modules/.cache-*
 # 如果是React项目
 node_modules/.cache/react/
+
+.idea
