@@ -20,24 +20,145 @@ function ChatPage() {
   };
 
   // 发送消息
-  const handleSend = () => {
+  // const handleSend = () => {
+  //   if (!input.trim()) return;
+  //   const newMessage = { sender: 'user', text: input };
+  //   const updatedMessages = [...messages, newMessage];
+  //   setMessages(updatedMessages);
+  //   saveToLocalStorage(updatedMessages);
+  //
+  //   // 模拟 Agent 回复
+  //   setTimeout(() => {
+  //     const reply = { sender: 'bot', text: `收到「${input}」，我会处理。` };
+  //     const finalMessages = [...updatedMessages, reply];
+  //     setMessages(finalMessages);
+  //     saveToLocalStorage(finalMessages);
+  //   }, 500);
+  //
+  //   setInput('');
+  // };
+
+
+  // 未修改-只能调用需求分析、只有需求分析一个参数
+  // const getApiEndpoint = (roleId) => {
+  //   switch (roleId) {
+  //     case 'analyst':
+  //       return 'http://localhost:8000/api/requirementgen/';
+  //     case 'architect':
+  //       return 'http://localhost:8000/api/architecture/';
+  //     case 'developer':
+  //       return 'http://localhost:8000/api/codegen/';
+  //     case 'tester':
+  //       return 'http://localhost:8000/api/test/';
+  //     default:
+  //       return '';
+  //   }
+  // };
+  //
+  // const handleSend = async () => {
+  //   if (!input.trim()) return;
+  //
+  //   const newMessage = { sender: 'user', text: input };
+  //   const updatedMessages = [...messages, newMessage];
+  //   setMessages(updatedMessages);
+  //   saveToLocalStorage(updatedMessages);
+  //   setInput('');
+  //
+  //   try {
+  //     const endpoint = getApiEndpoint(roleId);
+  //     if (!endpoint) throw new Error('无效角色');
+  //
+  //     const response = await fetch(endpoint, {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ topic: input }),
+  //     });
+  //
+  //     if (!response.ok) throw new Error('后端返回错误');
+  //
+  //     const data = await response.json();
+  //     const reply = {
+  //       sender: 'bot',
+  //       text: data.requirement || data.architecture || data.code || data.test || '无内容返回',
+  //     };
+  //     const finalMessages = [...updatedMessages, reply];
+  //     setMessages(finalMessages);
+  //     saveToLocalStorage(finalMessages);
+  //   } catch (err) {
+  //     const errorReply = {
+  //       sender: 'bot',
+  //       text: '服务器错误，请稍后再试。',
+  //     };
+  //     const finalMessages = [...updatedMessages, errorReply];
+  //     setMessages(finalMessages);
+  //     saveToLocalStorage(finalMessages);
+  //   }
+  // };
+
+
+    const agentConfigs = {
+    analyst: {
+      endpoint: 'http://localhost:8000/api/requirementgen/',
+      bodyField: 'topic',
+      responseField: 'requirement',
+    },
+    architect: {
+      endpoint: 'http://localhost:8000/api/architecture/',
+      bodyField: 'requirement_text',
+      responseField: 'architecture',
+    },
+    developer: {
+      endpoint: 'http://localhost:8000/api/codegen/',
+      bodyField: 'module_description',
+      responseField: 'code',
+    },
+    tester: {
+      endpoint: 'http://localhost:8000/api/test/',
+      bodyField: 'code',
+      responseField: 'test',
+    },
+  };
+
+  const handleSend = async () => {
     if (!input.trim()) return;
+
     const newMessage = { sender: 'user', text: input };
     const updatedMessages = [...messages, newMessage];
     setMessages(updatedMessages);
     saveToLocalStorage(updatedMessages);
+    setInput('');
 
-    // 模拟 Agent 回复
-    setTimeout(() => {
-      const reply = { sender: 'bot', text: `收到「${input}」，我会处理。` };
+    try {
+      const config = agentConfigs[roleId];
+      if (!config) throw new Error('无效角色');
+
+      const response = await fetch(config.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [config.bodyField]: input }),
+      });
+
+      if (!response.ok) throw new Error('后端返回错误');
+
+      const data = await response.json();
+      const reply = {
+        sender: 'bot',
+        text: data[config.responseField] || '无内容返回',
+      };
+
       const finalMessages = [...updatedMessages, reply];
       setMessages(finalMessages);
       saveToLocalStorage(finalMessages);
-    }, 500);
-
-    setInput('');
+    } catch (err) {
+      const errorReply = {
+        sender: 'bot',
+        text: '服务器错误，请稍后再试。',
+      };
+      const finalMessages = [...updatedMessages, errorReply];
+      setMessages(finalMessages);
+      saveToLocalStorage(finalMessages);
+    }
   };
-
   return (
     <div style={styles.page}>
       <div style={styles.chatBox}>

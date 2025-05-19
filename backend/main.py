@@ -43,3 +43,14 @@ app.include_router(document.router, prefix="/api/document", tags=["文档管理"
 @app.get("/")
 def read_root():
     return {"message": "欢迎使用软工平台 API。请访问 /docs 查看接口文档"}
+
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 或 ["http://localhost:3000"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
