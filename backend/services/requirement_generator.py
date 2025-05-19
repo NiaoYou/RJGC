@@ -1,11 +1,11 @@
-# @Author  : eco
-# @Date    ：2025/5/19 15:42
-# @Function: 需求生成模块/不同于需求获取
-import requests
 import os
+from openai import OpenAI
 
-OLLAMA_URL = os.getenv("LLM_API_URL", "http://localhost:11434/api/generate")
-LLM_MODEL = os.getenv("LLM_MODEL", "llama3")
+# 初始化阿里云 DashScope OpenAI 兼容客户端
+client = OpenAI(
+    api_key=os.getenv("DASHSCOPE_API_KEY"),  # 推荐通过环境变量设置
+    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
+)
 
 def generate_requirement(topic: str) -> str:
     prompt = f"""
@@ -20,12 +20,12 @@ def generate_requirement(topic: str) -> str:
 4. 其他注意事项（如鉴权、异常处理等）
 """
 
-    payload = {
-        "model": LLM_MODEL,
-        "prompt": prompt,
-        "stream": False
-    }
+    response = client.chat.completions.create(
+        model=os.getenv("LLM_MODEL", "qwen-plus"),  # 阿里支持的模型如 qwen-plus、qwen-turbo 等
+        messages=[
+            {"role": "system", "content": "你是一个专业的系统分析师"},
+            {"role": "user", "content": prompt}
+        ]
+    )
 
-    response = requests.post(OLLAMA_URL, json=payload)
-    response.raise_for_status()
-    return response.json()["response"].strip()
+    return response.choices[0].message.content.strip()
