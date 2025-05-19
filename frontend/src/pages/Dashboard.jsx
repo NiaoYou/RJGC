@@ -1,29 +1,24 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import AgentCard from '../components/AgentCard';
 
 const agents = [
-  { id: 1, name: '前端工程师', role: '负责界面与交互设计', icon: '🖼️', path: 'frontend' },
-  { id: 2, name: '后端工程师', role: '负责服务器与数据库逻辑', icon: '🖥️', path: 'backend' },
-  { id: 3, name: '测试工程师', role: '负责功能测试与质量保障', icon: '🧪', path: 'qa' },
-  { id: 4, name: '架构师', role: '负责系统整体架构设计', icon: '🧠', path: 'architect' },
+  { id: 1, name: '需求分析师', role: '负责收集和分析需求', icon: '📋', path: 'analyst' },
+  { id: 2, name: '架构设计师', role: '负责系统架构设计', icon: '🏗️', path: 'architect' },
+  { id: 3, name: '程序员', role: '负责代码实现与开发', icon: '👨‍💻', path: 'developer' },
+  { id: 4, name: '测试工程师', role: '负责软件测试与质量保障', icon: '🧪', path: 'tester' },
 ];
 
 function Dashboard({ user }) {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    // 这里可以加清除本地状态/存储的逻辑（可选）
-    navigate('/'); // 跳转到登录页
-  };
-
   return (
     <div style={styles.container}>
       {/* 顶部欢迎栏 */}
       <header style={styles.header}>
         <h2 style={styles.greeting}>欢迎，{user} 👋</h2>
-        <button onClick={handleLogout} style={styles.logoutBtn}>
-          🚪 退出登录
+        <button
+          onClick={() => window.location.href = '/'} // 正确返回登录页
+          style={styles.logoutBtn}
+        >
+          退出登录
         </button>
       </header>
 
@@ -39,31 +34,28 @@ function Dashboard({ user }) {
 
 const styles = {
   container: {
-    padding: '20px',
-    fontFamily: 'sans-serif',
+    padding: '30px',
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: '30px',
+    alignItems: 'center',
   },
   greeting: {
-    fontSize: '22px',
-    fontWeight: 'bold',
+    fontSize: '20px',
   },
   logoutBtn: {
-    backgroundColor: '#f44336',
-    color: 'white',
+    padding: '8px 16px',
+    backgroundColor: '#dc3545',
+    color: '#fff',
     border: 'none',
-    padding: '10px 16px',
-    borderRadius: '8px',
+    borderRadius: '6px',
     cursor: 'pointer',
-    fontWeight: 'bold',
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
     gap: '20px',
   },
 };

@@ -1,124 +1,122 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-
-const roleConfig = {
-  frontend: { name: '前端工程师', icon: '🖼️' },
-  backend: { name: '后端工程师', icon: '🖥️' },
-  qa: { name: '测试工程师', icon: '🧪' },
-  architect: { name: '架构师', icon: '🧠' },
-};
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 
 function ChatPage() {
   const { roleId } = useParams();
-  const navigate = useNavigate();
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([
-    { from: 'agent', text: '你好，有什么问题需要我帮忙？' },
-  ]);
 
-  const role = roleConfig[roleId] || { name: '未知角色', icon: '❓' };
+  // 加载历史记录
+  useEffect(() => {
+    const history = JSON.parse(localStorage.getItem('chat_history') || '{}');
+    setMessages(history[roleId] || []);
+  }, [roleId]);
 
-  const sendMessage = () => {
+  // 更新 localStorage
+  const saveToLocalStorage = (newMessages) => {
+    const history = JSON.parse(localStorage.getItem('chat_history') || '{}');
+    history[roleId] = newMessages;
+    localStorage.setItem('chat_history', JSON.stringify(history));
+  };
+
+  // 发送消息
+  const handleSend = () => {
     if (!input.trim()) return;
-    setMessages([...messages, { from: 'user', text: input }]);
+    const newMessage = { sender: 'user', text: input };
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
+    saveToLocalStorage(updatedMessages);
+
+    // 模拟 Agent 回复
+    setTimeout(() => {
+      const reply = { sender: 'bot', text: `收到「${input}」，我会处理。` };
+      const finalMessages = [...updatedMessages, reply];
+      setMessages(finalMessages);
+      saveToLocalStorage(finalMessages);
+    }, 500);
+
     setInput('');
-    // 这里可以接入 ChatGPT 接口
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <button onClick={() => navigate(-1)} style={styles.backBtn}>← 返回</button>
-        <h2>{role.icon} {role.name}</h2>
-      </div>
-
+    <div style={styles.page}>
       <div style={styles.chatBox}>
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            style={msg.from === 'user' ? styles.userMsg : styles.agentMsg}
-          >
-            {msg.text}
-          </div>
-        ))}
-      </div>
-
-      <div style={styles.inputArea}>
-        <input
-          style={styles.input}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="请输入你的问题..."
-        />
-        <button style={styles.sendBtn} onClick={sendMessage}>发送</button>
+        <h2 style={styles.title}>与 {roleId} 对话</h2>
+        <div style={styles.messages}>
+          {messages.map((msg, idx) => (
+            <div key={idx} style={{ ...styles.message, alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start', background: msg.sender === 'user' ? '#007bff' : '#eee', color: msg.sender === 'user' ? '#fff' : '#000' }}>
+              {msg.text}
+            </div>
+          ))}
+        </div>
+        <div style={styles.inputArea}>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="请输入消息..."
+            style={styles.input}
+          />
+          <button onClick={handleSend} style={styles.sendBtn}>发送</button>
+        </div>
       </div>
     </div>
   );
 }
 
 const styles = {
-  container: {
-    padding: '20px',
+  page: {
     height: '100vh',
-    background: '#f1f3f5',
     display: 'flex',
-    flexDirection: 'column',
-  },
-  header: {
-    display: 'flex',
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: '16px',
-    marginBottom: '12px',
-  },
-  backBtn: {
-    background: 'transparent',
-    border: 'none',
-    color: '#007bff',
-    fontSize: '16px',
-    cursor: 'pointer',
+    background: '#f4f7fa',
   },
   chatBox: {
+    width: '500px',
+    height: '600px',
+    background: '#fff',
+    borderRadius: '12px',
+    boxShadow: '0 5px 20px rgba(0,0,0,0.1)',
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '20px',
+  },
+  title: {
+    textAlign: 'center',
+    marginBottom: '10px',
+  },
+  messages: {
     flex: 1,
     overflowY: 'auto',
-    background: '#fff',
-    borderRadius: '10px',
-    padding: '16px',
-    boxShadow: '0 0 6px rgba(0,0,0,0.05)',
-    marginBottom: '12px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    padding: '10px',
   },
-  userMsg: {
-    alignSelf: 'flex-end',
-    background: '#d1e7dd',
-    padding: '10px 14px',
-    borderRadius: '18px',
-    marginBottom: '8px',
-    maxWidth: '70%',
-    textAlign: 'right',
-  },
-  agentMsg: {
-    alignSelf: 'flex-start',
-    background: '#e2e3e5',
-    padding: '10px 14px',
-    borderRadius: '18px',
-    marginBottom: '8px',
-    maxWidth: '70%',
+  message: {
+    maxWidth: '80%',
+    padding: '10px 15px',
+    borderRadius: '16px',
+    fontSize: '14px',
   },
   inputArea: {
     display: 'flex',
-    gap: '8px',
+    gap: '10px',
   },
   input: {
     flex: 1,
     padding: '10px',
     borderRadius: '8px',
     border: '1px solid #ccc',
+    fontSize: '14px',
+    outline: 'none',
   },
   sendBtn: {
     padding: '10px 16px',
-    border: 'none',
-    borderRadius: '8px',
     backgroundColor: '#007bff',
     color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
     cursor: 'pointer',
   },
 };

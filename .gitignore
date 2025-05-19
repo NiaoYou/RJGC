@@ -11,3 +11,10 @@ __pycache__/
 .env
 .env.local
 *.env.*
+# ESLint缓存
+.eslintcache
+# Node模块缓存
+node_modules/.cache/
+node_modules/.cache-*
+# 如果是React项目
+node_modules/.cache/react/
