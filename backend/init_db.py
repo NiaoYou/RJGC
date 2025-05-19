@@ -13,3 +13,5 @@ def init():
 
 if __name__ == "__main__":
     init()
+    print("📋 已注册表：", Base.metadata.tables.keys())
+
