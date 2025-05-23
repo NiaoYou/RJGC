@@ -1,15 +1,19 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from './pages/LoginPage';
+import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import ChatPage from './pages/ChatPage';
+import DocumentPage from './pages/DocumentPage';
 import Layout from './components/Layout';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        {/* 登录页不使用 Layout */}
+        <Route path="/" element={<LoginPage />} />
+
+        {/* 以下页面统一使用 Layout 结构 */}
         <Route
           path="/dashboard"
           element={
@@ -23,6 +27,14 @@ function App() {
           element={
             <Layout>
               <ChatPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/documents"
+          element={
+            <Layout>
+              <DocumentPage />
             </Layout>
           }
         />
