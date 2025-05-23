@@ -15,7 +15,8 @@ function Layout({ children }) {
         <h2 style={styles.logo}>🛠 软件工程管理平台</h2>
         <nav style={styles.nav}>
           <Link to="/dashboard" style={styles.link}>📊 首页</Link>
-          <Link to="/chat/frontend" style={styles.link}>💬 聊天</Link>
+        <Link to="/documents" style={styles.link}>📂 文档管理</Link>
+
          
         </nav>
       </aside>
