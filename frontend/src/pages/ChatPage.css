@@ -1,0 +1,39 @@
+/* Markdown 内容样式调整 */
+.markdown-content {
+  line-height: 1.4;
+}
+
+.markdown-content p {
+  margin: 0.5em 0;
+}
+
+.markdown-content h1, 
+.markdown-content h2, 
+.markdown-content h3, 
+.markdown-content h4, 
+.markdown-content h5, 
+.markdown-content h6 {
+  margin-top: 0.8em;
+  margin-bottom: 0.5em;
+}
+
+.markdown-content pre {
+  margin: 0.5em 0;
+}
+
+.markdown-content ul, 
+.markdown-content ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.markdown-content li {
+  margin: 0.2em 0;
+}
+
+.markdown-content code {
+  background-color: #f0f0f0;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: monospace;
+}

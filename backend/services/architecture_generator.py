@@ -1,21 +1,20 @@
 import os
 from openai import OpenAI
 
-# 初始化阿里云百炼 OpenAI 兼容客户端
+# 初始化DeepSeek OpenAI兼容客户端
 client = OpenAI(
-    api_key=os.getenv("DASHSCOPE_API_KEY"),  # 推荐设置环境变量
-    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    api_key=os.getenv("DEEPSEEK_API_KEY"),  # 推荐设置环境变量
+    base_url="https://api.deepseek.com",  # DeepSeek API地址
 )
 
 def call_llm(prompt: str, system_prompt: str = "你是一个资深的系统架构专家") -> str:
     try:
         completion = client.chat.completions.create(
-            model="qwen-plus",
+            model="deepseek-chat",  # 使用DeepSeek-V3模型
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt},
             ],
-            # extra_body={"enable_thinking": False},  # 如果你用的是 Qwen3 可启用
         )
         return completion.choices[0].message.content.strip()
     except Exception as e:

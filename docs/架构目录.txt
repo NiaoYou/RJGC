@@ -18,7 +18,7 @@ softeng-platform/
 │   │   ├── codegen.py
 │   │   └── testing.py
 │   ├── services/                # 核心业务逻辑（调用大模型、本地API）
-│   │   ├── auth_service.py
+│   │   ├── authf_service.py
 │   │   ├── requirement_logic.py
 │   │   ├── architecture_generator.py
 │   │   ├── code_generator.py

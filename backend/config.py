@@ -14,6 +14,3 @@ DB_USER = os.getenv("DB_USER", "root")
 DB_PASS = os.getenv("DB_PASS", "password")
 DB_NAME = os.getenv("DB_NAME", "softeng_platform")
 
-# 本地大模型接口配置（Ollama）
-LLM_API_URL = os.getenv("LLM_API_URL", "http://localhost:11434/api/generate")
-LLM_MODEL = os.getenv("LLM_MODEL", "llama3")
