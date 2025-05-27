@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { marked } from 'marked';
+import './ChatPage.css';
 
 const agentConfigs = {
   analyst: {
@@ -32,6 +33,7 @@ function ChatPage() {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [copiedId, setCopiedId] = useState(null);
   const messageEndRef = useRef(null);
 
   useEffect(() => {
@@ -86,6 +88,23 @@ function ChatPage() {
     setInput('');
 
     try {
+      // 检查是否是简单问候
+      const greetings = ['你好', '您好', 'hello', 'hi', '嗨'];
+      if (greetings.some(greeting => input.toLowerCase().includes(greeting.toLowerCase()))) {
+        const roleGreetings = {
+          analyst: '你好！我是需求分析师。请告诉我你想要开发的系统或功能，我会帮你分析并生成详细需求。',
+          architect: '你好！我是系统架构师。请描述你的系统需求，我会为你设计合适的架构和数据库方案。',
+          developer: '你好！我是开发工程师。请描述你需要实现的模块功能，我会为你生成相应的代码。',
+          tester: '你好！我是测试工程师。请提供你需要测试的代码，我会为你生成测试用例。'
+        };
+        
+        const replyText = roleGreetings[roleId] || '你好！请告诉我你需要什么帮助？';
+        const final = [...messages, userMessage, { sender: 'bot', text: replyText }];
+        setMessages(final);
+        saveToLocalStorage(final);
+        return;
+      }
+
       const config = agentConfigs[roleId];
       const context = getPreviousSummary();
       const fullInput = context ? `${context}\n当前输入：${input}` : input;
@@ -117,6 +136,13 @@ function ChatPage() {
     setMessages([]);
   };
 
+  const handleCopy = (text, idx) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedId(idx);
+      setTimeout(() => setCopiedId(null), 2000); // 2秒后重置复制状态
+    });
+  };
+
   return (
     <div style={styles.page}>
       <div style={styles.chatBox}>
@@ -136,12 +162,33 @@ function ChatPage() {
                 background: msg.fromPrevious ? '#e0e0e0' : (msg.sender === 'user' ? '#007bff' : '#eee'),
                 color: msg.sender === 'user' ? '#fff' : '#000',
                 fontStyle: msg.fromPrevious ? 'italic' : 'normal',
+                position: 'relative', // 添加相对定位
               }}
             >
               {msg.sender === 'bot' && !msg.loading && !msg.fromPrevious ? (
-                <div dangerouslySetInnerHTML={{ __html: marked(msg.text) }} />
+                <>
+                  <div className="markdown-content" dangerouslySetInnerHTML={{ __html: marked(msg.text) }} />
+                  <button 
+                    onClick={() => handleCopy(msg.text, idx)}
+                    style={styles.copyButton}
+                    title="复制内容"
+                  >
+                    {copiedId === idx ? '✓' : '📋'}
+                  </button>
+                </>
               ) : (
-                msg.text
+                <>
+                  {msg.text}
+                  {msg.sender === 'user' && (
+                    <button 
+                      onClick={() => handleCopy(msg.text, idx)}
+                      style={{...styles.copyButton, color: '#fff'}}
+                      title="复制内容"
+                    >
+                      {copiedId === idx ? '✓' : '📋'}
+                    </button>
+                  )}
+                </>
               )}
             </div>
           ))}
@@ -149,12 +196,18 @@ function ChatPage() {
         </div>
 
         <div style={styles.inputArea}>
-          <input
+          <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="请输入消息..."
             style={styles.input}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            rows={3}
           />
           <button onClick={handleSend} style={styles.sendBtn}>发送</button>
         </div>
@@ -213,14 +266,21 @@ const styles = {
     flexDirection: 'column',
     gap: '10px',
     marginBottom: '16px',
+    maxHeight: '60vh', // 增加最大高度
   },
   message: {
-    padding: '10px 14px',
+    padding: '14px 18px', // 增加上下左右内边距
     borderRadius: '10px',
     maxWidth: '80%',
     wordBreak: 'break-word',
     whiteSpace: 'pre-wrap',
     fontSize: '14px',
+    lineHeight: '1.5', // 增加行高
+    overflowX: 'auto',
+    maxHeight: '400px',
+    overflowY: 'auto',
+    minHeight: '24px', // 添加最小高度确保气泡不会太矮
+    position: 'relative', // 添加相对定位
   },
   inputArea: {
     display: 'flex',
@@ -232,6 +292,9 @@ const styles = {
     borderRadius: '8px',
     border: '1px solid #ccc',
     fontSize: '14px',
+    resize: 'vertical', // 允许垂直调整大小
+    minHeight: '60px',  // 最小高度
+    fontFamily: 'inherit', // 继承字体
   },
   sendBtn: {
     backgroundColor: '#007bff',
@@ -240,6 +303,22 @@ const styles = {
     padding: '10px 16px',
     borderRadius: '8px',
     cursor: 'pointer',
+  },
+  copyButton: {
+    position: 'absolute',
+    top: '5px',
+    right: '5px',
+    background: 'rgba(255, 255, 255, 0.7)',
+    border: 'none',
+    borderRadius: '4px',
+    padding: '2px 6px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    opacity: 0.7,
+    transition: 'opacity 0.2s',
+    ':hover': {
+      opacity: 1
+    }
   },
 };
 

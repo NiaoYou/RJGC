@@ -1,10 +1,10 @@
 import os
 from openai import OpenAI
 
-# 初始化阿里云 DashScope OpenAI 兼容客户端
+# 初始化DeepSeek OpenAI兼容客户端
 client = OpenAI(
-    api_key=os.getenv("DASHSCOPE_API_KEY"),  # 推荐通过环境变量设置
-    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
+    api_key=os.getenv("DEEPSEEK_API_KEY"),  # 推荐设置环境变量
+    base_url="https://api.deepseek.com",  # DeepSeek API地址
 )
 
 def generate_requirement(topic: str) -> str:
@@ -21,7 +21,7 @@ def generate_requirement(topic: str) -> str:
 """
 
     response = client.chat.completions.create(
-        model=os.getenv("LLM_MODEL", "qwen-plus"),  # 阿里支持的模型如 qwen-plus、qwen-turbo 等
+        model="deepseek-chat",  # 使用DeepSeek-V3模型
         messages=[
             {"role": "system", "content": "你是一个专业的系统分析师"},
             {"role": "user", "content": prompt}
