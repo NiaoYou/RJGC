@@ -269,6 +269,7 @@ const styles = {
     borderRadius: '12px',
     margin: '12px',
     boxShadow: 'inset 0 0 0 1px rgba(255, 255, 255, 0.1)',
+    height: 'calc(100vh - 38px)', // 与侧边栏等高
   },
   sidebarHeader: {
     display: 'flex',
