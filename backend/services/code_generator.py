@@ -1,5 +1,7 @@
 import os
 from openai import OpenAI
+import json
+import asyncio
 
 # 初始化DeepSeek OpenAI兼容客户端
 client = OpenAI(
@@ -29,3 +31,31 @@ def generate_module_code(description: str) -> str:
 请返回完整的 Python 源代码。
 """
     return call_llm(prompt)
+
+async def generate_module_code_stream(description: str):
+    """流式生成代码"""
+    prompt = f"""你是一个资深后端开发，请根据以下模块描述生成 FastAPI 模块代码，包含路由和服务逻辑。
+模块描述：
+{description}
+
+请返回完整的 Python 源代码。
+"""
+    try:
+        response = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": "你是一个资深的后端开发师"},
+                {"role": "user", "content": prompt}
+            ],
+            stream=True  # 启用流式输出
+        )
+        
+        for chunk in response:
+            if chunk.choices and chunk.choices[0].delta.content:
+                content = chunk.choices[0].delta.content
+                yield f"data: {json.dumps({'content': content})}\n\n"
+                await asyncio.sleep(0.01)  # 小延迟，避免过快
+                
+    except Exception as e:
+        print(f"流式生成失败: {e}")
+        yield f"data: {json.dumps({'error': str(e)})}\n\n"

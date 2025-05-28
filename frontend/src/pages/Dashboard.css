@@ -1,37 +1,66 @@
+/* 仪表盘页面背景 - 注释掉或移除这部分 */
+/* body {
+  background-color: #f5f3ff !important;
+}
+
+.dashboard-container {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(102, 121, 245, 0.22) 100%);
+  min-height: 100vh;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+} */
+
 /* 滚动提示容器 */
 .scrolling-prompts-container {
   display: flex;
   flex-direction: column;
   gap: 12px;
   overflow: hidden;
+  padding: 10px 0;
+  margin: -10px 0;
+  margin-top: 0; /* 移除了额外的上边距，因为没有标题了 */
 }
 
 /* 滚动提示行 */
 .scrolling-prompts-row {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   width: 100%;
+  padding: 5px 0; /* 增加内边距从5px到10px */
+  margin: -10px 0; /* 使用负边距抵消内边距对布局的影响 */
+}
+
+/* 为第一行提供适当的上边距 */
+.scrolling-prompts-row:first-child {
+  margin-top: 0; /* 移除额外的上边距，因为没有标题了 */
 }
 
 /* 滚动轨道 - 新增 */
 .scrolling-prompts-track {
   display: flex;
   width: fit-content;
+  padding: 10px 0; /* 增加内边距从5px到10px */
+  margin: -10px 0; /* 使用负边距抵消内边距对布局的影响 */
 }
 
-/* 滚动提示项 */
+/* 修复滚动提示项悬停时边框显示不完整的问题 */
 .scrolling-prompt {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  background-color: #ffffff;
+  padding: 18px 20px;
+  background-color: white;
   border-radius: 30px;
   cursor: pointer;
   margin-right: 12px;
   min-width: 240px;
   border: 1px solid #e5e5e5;
   flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative; /* 添加相对定位 */
+  overflow: visible; /* 确保边框不会被裁剪 */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* 只对变换和阴影添加过渡效果 */
 }
 
 /* 从右向左滚动的行 */
@@ -77,7 +106,13 @@
 
 /* 鼠标悬停效果 */
 .scrolling-prompt:hover {
-  background-color: #f0f0f0;
+  background-color: #f9f9f9;
+  border-color: rgb(52, 60, 207);
+  border-width: 2px; /* 增加边框宽度 */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 60, 207, 0.15);
+  padding: 17px 19px; /* 减少内边距以补偿边框宽度增加 */
+  z-index: 10; /* 确保悬停项在最上层 */
 }
 
 /* 为不同行设置不同的动画速度 */
@@ -94,7 +129,7 @@
   font-size: 30px;
   font-weight: 600;
   margin-bottom: 24px;
-  color: #000000;
+  color: #000;
   position: relative;
   padding-bottom: 10px;
   letter-spacing: -0.02em;
@@ -108,13 +143,14 @@
   left: 0;
   width: 60px;
   height: 3px;
-  background: linear-gradient(90deg, #10a37f, #34d399);
+  background: linear-gradient(90deg, rgb(58, 60, 102), rgb(52, 60, 207)); /* 使用登录页面的渐变色 */
   border-radius: 3px;
 }
 
 /* 居中的章节标题 */
 .section-title-centered {
   text-align: center;
+  margin-bottom: 40px; /* 增加底部间距，从24px增加到40px */
 }
 
 .section-title-centered::after {
@@ -138,11 +174,11 @@
 }
 
 .section-title-decorated::before {
-  background: linear-gradient(90deg, transparent, #10a37f);
+  background: linear-gradient(90deg, transparent, rgb(58, 60, 102)); /* 使用登录页面的深蓝紫色 */
 }
 
 .section-title-decorated::after {
-  background: linear-gradient(90deg, #10a37f, transparent);
+  background: linear-gradient(90deg, rgb(58, 60, 102), transparent); /* 使用登录页面的深蓝紫色 */
 }
 
 /* 隐藏水平滚动条 */
@@ -163,6 +199,8 @@
 /* 箭头按钮悬停效果 */
 .arrow-button {
   transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .arrow-button:hover {
@@ -173,10 +211,12 @@
 /* 指示器动画 */
 .indicator {
   transition: background-color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .indicator:hover {
   transform: scale(1.2);
+  background-color: rgb(52, 60, 207) !important; /* 使用登录页面的亮蓝紫色 */
 }
 
 /* 窗格内容淡入效果 */
@@ -195,4 +235,30 @@
 
 .pane > *:nth-child(3) {
   animation-delay: 0.2s;
+}
+
+/* 修复dashboard按钮悬停效果 */
+.dashboard-button {
+  background-color: rgb(52, 60, 207) !important;
+  color: #ffffff !important;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dashboard-button:hover {
+  background-color: rgb(52, 60, 207) !important; /* 保持背景色不变 */
+  color: #ffffff !important; /* 保持文字颜色不变 */
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 覆盖全局按钮悬停样式 */
+button.dashboard-button:hover {
+  background-color: rgb(52, 60, 207) !important;
+  color: #ffffff !important;
 }
