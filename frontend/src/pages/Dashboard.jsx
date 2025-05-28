@@ -43,19 +43,19 @@ function Dashboard({ user }) {
   const [activePane, setActivePane] = useState(0);
   const slidesRef = useRef(null);
 
-  // 移除可能影响滚动的 useEffect
-  // useEffect(() => {
-  //   // 确保进入仪表盘时允许整页滚动
-  //   document.body.style.overflow = 'auto';
-  //   document.documentElement.style.overflow = 'auto';
-  //   document.body.classList.remove('meeting-page');
-  //   
-  //   // 移除内容区域的滚动限制
-  //   const contentElement = document.querySelector('.content');
-  //   if (contentElement) {
-  //     contentElement.style.overflowY = 'visible';
-  //   }
-  // }, []);
+  // 移除这个 useEffect，它直接操作 DOM 设置高度
+  useEffect(() => {
+    // 直接设置slidesContainer的高度
+    const slidesContainer = document.querySelector('.slides-container');
+    if (slidesContainer) {
+      slidesContainer.style.height = '900px';
+    }
+    
+    // 同时设置父元素的高度
+    if (slidesRef.current && slidesRef.current.parentElement) {
+      slidesRef.current.parentElement.style.height = '900px';
+    }
+  }, []);
 
   // 处理提示悬停
   const handlePromptHover = (rowIndex, promptIndex, isHovering) => {
@@ -98,18 +98,20 @@ function Dashboard({ user }) {
 
   return (
     <div style={{
-      // 移除这个背景设置
-      // position: 'absolute',
-      // top: 0,
-      // left: 0,
-      // right: 0,
-      // bottom: 0,
-      // background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(102, 121, 245, 0.22) 100%)',
-      // zIndex: -1, // 确保它在内容后面
+      minHeight: '100vh', // 使用视口高度而不是百分比
+      display: 'flex',
+      flexDirection: 'column',
     }}>
       <div style={styles.container}>
         {/* 上半部分 - 水平滚动窗格 */}
-        <div style={{...styles.slidesContainer}}>
+        <div 
+          className="slides-container"
+          style={{
+            ...styles.slidesContainer,
+            // 移除这行硬编码的高度
+            // height: '900px !important', // 使用!important确保优先级
+          }}
+        >
           {/* 左箭头 */}
           <button 
             style={{
@@ -157,12 +159,12 @@ function Dashboard({ user }) {
             onScroll={handleScroll}
           >
             {/* 窗格1 - 欢迎信息 */}
-            <div style={styles.pane}>
-              <header style={styles.header}>
+            <div style={{...styles.pane, paddingTop: '90px'}}>
+              <header style={{...styles.header, marginBottom: '30px'}}>
                 <h1 style={styles.heroTitle}>
                   AI驱动开发&nbsp;&nbsp;&nbsp;&nbsp;智能协作
                 </h1>
-                <p style={styles.heroSubtitle}>
+                <p style={{...styles.heroSubtitle, marginBottom: '30px'}}>
                   DevHub&nbsp;&nbsp;让软件开发更简单高效<br />需求分析&nbsp;&nbsp;架构设计&nbsp;&nbsp;编码实现&nbsp;&nbsp;测试部署<br />AI助手全程协作&nbsp;&nbsp;助您快速完成项目
                 </p>
                 <button 
@@ -181,7 +183,8 @@ function Dashboard({ user }) {
                     cursor: 'pointer',
                     transform: isHovered ? 'scale(1.05)' : 'scale(1)',
                     boxShadow: isHovered ? '0 6px 20px rgba(0, 0, 0, 0.2)' : 'none',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    marginTop: '20px',
                   }}
                 >
                   立即开始 →
@@ -209,31 +212,32 @@ function Dashboard({ user }) {
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center', // 内容居中
-                justifyContent: 'center', // 内容居中
-                textAlign: 'center', // 文本居中
-                maxWidth: '500px', // 限制最大宽度
-                margin: '0 auto', // 水平居中
-                width: '80%' // 设置为容器宽度的80%
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                maxWidth: '450px', // 从500px减小到450px
+                margin: '0 auto',
+                width: '75%', // 从80%减小到75%
+                padding: '25px', // 从30px减小到25px
               }}>
                 <div style={{
                   ...styles.meetingCardContent,
                   display: 'flex',
-                  flexDirection: 'column', // 改为纵向排列
-                  alignItems: 'center', // 内容居中
-                  gap: '16px',
-                  width: '100%' // 确保内容宽度为100%
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '18px', // 从20px减小到18px
+                  width: '100%'
                 }}>
-                  <div style={styles.meetingIcon}>🏢</div>
+                  <div style={{...styles.meetingIcon, width: '45px', height: '45px', fontSize: '24px'}}>🏢</div>
                   <div style={{
                     ...styles.meetingInfo,
-                    textAlign: 'center' // 文本居中
+                    textAlign: 'center'
                   }}>
-                    <h3 style={styles.meetingTitle}>项目会议室</h3>
-                    <p style={styles.meetingDesc}>所有角色在同一个会话中协作，自动化整个开发流程</p>
+                    <h3 style={{...styles.meetingTitle, fontSize: '19px', marginBottom: '5px'}}>项目会议室</h3>
+                    <p style={{...styles.meetingDesc, fontSize: '14px'}}>所有角色在同一个会话中协作，自动化整个开发流程</p>
                   </div>
                 </div>
-                <div style={{display: 'flex', justifyContent: 'center', width: '100%', marginTop: '20px'}}>
+                <div style={{display: 'flex', justifyContent: 'center', width: '100%', marginTop: '22px'}}>
                   <button 
                     onClick={() => navigate('/meeting')} 
                     onMouseEnter={() => setIsMeetingBtnHovered(true)}
@@ -244,8 +248,8 @@ function Dashboard({ user }) {
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: '25px',
-                      padding: '12px 20px',
-                      fontSize: '14px',
+                      padding: '10px 18px', // 减小按钮内边距
+                      fontSize: '14px', // 减小字体大小
                       fontWeight: '500',
                       cursor: 'pointer',
                       transform: isMeetingBtnHovered ? 'scale(1.05)' : 'scale(1)',
@@ -311,23 +315,28 @@ function Dashboard({ user }) {
 
 const styles = {
   container: {
-    maxWidth: '800px',
+    maxWidth: '850px', // 从800px增加到850px
     margin: '0 auto',
     padding: '40px 0',
-    minHeight: 'calc(100vh - 24px)', // 减去wrapper的内边距
+    height: '100%', // 填满父元素高度
+    display: 'flex',
+    flexDirection: 'column',
     // 确保这里没有背景定义
     background: 'transparent',
   },
   slidesContainer: {
     position: 'relative',
-    marginBottom: '60px',
+    marginBottom: '10px', // 从60px减少到30px
     overflow: 'hidden',
     borderRadius: '16px',
     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+    width: '100%',
+    height: '600px', // 从900px减小到600px
   },
   slides: {
     display: 'flex',
     width: '100%',
+    height: '100%', // 确保填满slidesContainer的高度
     overflowX: 'auto',
     scrollSnapType: 'x mandatory',
     scrollBehavior: 'smooth',
@@ -341,12 +350,14 @@ const styles = {
   pane: {
     flex: '0 0 100%',
     scrollSnapAlign: 'start',
-    padding: '40px',
+    padding: '40px 40px 70px 40px',
     boxSizing: 'border-box',
-    minHeight: '400px',
+    height: '100%', // 确保填满容器高度
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'center', // 确保垂直居中
+    alignItems: 'center', // 水平居中
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
   },
   arrowButton: {
     position: 'absolute',
@@ -368,7 +379,7 @@ const styles = {
   },
   indicators: {
     position: 'absolute',
-    bottom: '20px',
+    bottom: '30px', // 增加底部距离
     left: '50%',
     transform: 'translateX(-50%)',
     display: 'flex',

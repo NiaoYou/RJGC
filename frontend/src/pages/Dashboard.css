@@ -262,3 +262,8 @@ button.dashboard-button:hover {
   background-color: rgb(52, 60, 207) !important;
   color: #ffffff !important;
 }
+
+/* 强制设置slides-container的高度 */
+.slides-container {
+  height: 500px !important; 
+}
