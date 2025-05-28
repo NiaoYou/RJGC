@@ -55,24 +55,19 @@ function MeetingRoom() {
     // 离开会议室页面时恢复原始状态
     return () => {
       document.body.classList.remove('meeting-page');
-      document.body.style.overflow = 'auto'; // 确保返回后允许滚动
-      document.documentElement.style.overflow = 'auto'; // 确保返回后允许滚动
+      document.body.style.overflow = originalBodyOverflow || 'auto';
+      document.documentElement.style.overflow = originalHtmlOverflow || 'auto';
     };
   }, []);
 
   useEffect(() => {
-    // 加载历史记录或显示欢迎消息
+    // 加载历史记录
     const history = JSON.parse(localStorage.getItem('meeting_history') || '[]');
     if (history.length > 0) {
       setMessages(history);
     } else {
-      setMessages([
-        {
-          sender: 'system',
-          text: '👋 欢迎来到项目会议室！请描述您的项目需求，所有团队成员将依次参与讨论。',
-          timestamp: new Date().toISOString()
-        }
-      ]);
+      // 初始化为空消息列表，不显示欢迎消息
+      setMessages([]);
     }
   }, []);
 
@@ -130,7 +125,6 @@ function MeetingRoom() {
           .filter(m => !m.thinking)
           .map(m => {
             const sender = m.sender === 'user' ? '用户' : 
-                          m.sender === 'system' ? '系统' : 
                           agents.find(a => a.id === m.sender)?.name || m.sender;
             return `${sender}: ${m.text}`;
           })
@@ -251,13 +245,8 @@ function MeetingRoom() {
   const handleClear = () => {
     if (window.confirm('确定要清除所有会议记录吗？')) {
       localStorage.removeItem('meeting_history');
-      setMessages([
-        {
-          sender: 'system',
-          text: '👋 会议记录已清除。请描述您的新项目需求。',
-          timestamp: new Date().toISOString()
-        }
-      ]);
+      // 清除后显示空消息列表，不显示欢迎消息
+      setMessages([]);
     }
   };
 
@@ -265,65 +254,26 @@ function MeetingRoom() {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedId(idx);
       // 显示复制成功标记2秒
-      const button = document.querySelector(`.message-container:nth-child(${idx + 1}) .copy-button`);
-      if (button) {
-        button.classList.add('copied');
-        setTimeout(() => {
-          setCopiedId(null);
-          button.classList.remove('copied');
-        }, 2000);
-      }
+      setTimeout(() => {
+        setCopiedId(null);
+      }, 2000);
     });
   };
 
   const getSenderInfo = (senderId) => {
     if (senderId === 'user') return { name: '您', avatar: '👤', color: '#007bff' };
-    if (senderId === 'system') return { name: '系统', avatar: '🤖', color: '#6c757d' };
     return agents.find(a => a.id === senderId) || { name: senderId, avatar: '👾', color: '#6c757d' };
   };
 
   return (
-    <div className="page" style={{
-      background: 'transparent',
-      height: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: '20px', // 添加内边距，四周留出空间
-      margin: '0',
-      overflow: 'hidden',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
-    }}>
-      <div className="chat-box" style={{
-        height: 'calc(100% - 40px)', // 减去上下内边距
-        maxHeight: 'calc(100vh - 40px)', // 减去上下内边距
-        width: 'calc(100% - 40px)', // 减去左右内边距
-        margin: '0',
-        borderRadius: '12px', // 恢复圆角
-        boxShadow: '0 10px 25px rgba(0,0,0,0.1)', // 恢复阴影效果
-      }}>
-        <div className="header">
-          <button onClick={() => navigate('/dashboard')} className="back-button">
-            <span className="back-arrow">←</span> 返回
+    <div className="meeting-page-container">
+      <div className="meeting-chat-box">
+        <div className="meeting-header">
+          <button onClick={() => navigate('/dashboard')} className="meeting-back-button">
+            <span>←</span> 返回
           </button>
-          <h2 className="title">项目会议室</h2>
-          <button 
-            onClick={handleClear} 
-            className="clear-button"
-            style={{
-              background: 'none',
-              border: 'none',
-              padding: '8px 12px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '16px',
-              color: 'rgb(52, 60, 207)', // 使用蓝紫色
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px'
-            }}
-          >
+          <h2 className="meeting-title">项目会议室</h2>
+          <button onClick={handleClear} className="meeting-clear-button">
             <img 
               src="/icons/delete.svg" 
               alt="删除" 
@@ -337,15 +287,13 @@ function MeetingRoom() {
           </button>
         </div>
 
-        <div className="agent-bar">
+        <div className="meeting-agent-bar">
           {agents.map(agent => (
             <div 
               key={agent.id} 
-              className="agent-icon"
+              className={`meeting-agent-icon ${currentAgent === agent.id ? 'active' : ''}`}
               style={{
-                backgroundColor: agent.color,
-                opacity: currentAgent === agent.id ? 1 : 0.6,
-                transform: currentAgent === agent.id ? 'scale(1.1)' : 'scale(1)'
+                backgroundColor: agent.color
               }}
               title={agent.name}
             >
@@ -354,31 +302,10 @@ function MeetingRoom() {
           ))}
         </div>
 
-        <div className="messages">
+        <div className="meeting-messages">
           {messages.map((msg, idx) => {
             const sender = getSenderInfo(msg.sender);
             const isUserMessage = msg.sender === 'user';
-            const isSystemMessage = msg.sender === 'system';
-            
-            // 系统消息使用特殊样式
-            if (isSystemMessage) {
-              return (
-                <div key={idx} className="system-message">
-                  <div 
-                    className="message"
-                    style={{
-                      backgroundColor: 'transparent',
-                      color: 'rgb(52, 60, 207)',
-                      border: 'none',
-                      borderLeft: 'none', // 明确移除左侧边框
-                      boxShadow: 'none'
-                    }}
-                  >
-                    {msg.text}
-                  </div>
-                </div>
-              );
-            }
             
             return (
               <div 
@@ -392,29 +319,14 @@ function MeetingRoom() {
                 )}
                 
                 <div className="message-wrapper">
-                  {/* 发送者名称 - 显示在气泡上方 */}
                   {!isUserMessage && !msg.thinking && (
-                    <div className="sender-name" style={{
-                      fontWeight: 'bold',
-                      marginBottom: '5px',
-                      fontSize: '13px',
-                      color: '#333'
-                    }}>
-                      {sender.name}
-                    </div>
+                    <div className="sender-name">{sender.name}</div>
                   )}
                   
-                  {/* 消息气泡 */}
                   <div
-                    className="message"
+                    className={`message ${msg.thinking ? 'thinking' : ''} ${msg.isError ? 'error' : ''}`}
                     style={{
-                      backgroundColor: isUserMessage ? 'rgb(52, 60, 207)' : 
-                                      msg.thinking ? '#f8f9fa' : 
-                                      msg.isError ? '#dc3545' : 
-                                      sender.color + '22', // 使用代理颜色的透明版本
-                      color: isUserMessage ? '#fff' : '#000',
-                      borderLeft: !isUserMessage ? `4px solid ${sender.color}` : 'none',
-                      opacity: msg.thinking ? 0.8 : 1,
+                      borderLeftColor: !isUserMessage ? sender.color : 'transparent'
                     }}
                   >
                     {msg.thinking ? (
@@ -427,38 +339,23 @@ function MeetingRoom() {
                       <button 
                         onClick={() => handleCopy(msg.text, idx)}
                         className={`copy-button ${copiedId === idx ? 'copied' : ''}`}
-                        title="复制内容"
                       >
                         {copiedId === idx ? '已复制' : '复制'}
                       </button>
                     )}
                   </div>
                   
-                  {/* 时间戳 - 显示在气泡下方 */}
-                  <div className="message-timestamp" style={{
-                    fontSize: '10px',
-                    fontStyle: 'italic',
-                    color: 'rgb(52, 60, 207)',
-                    opacity: 0.8,
-                    marginTop: '4px',
-                    textAlign: isUserMessage ? 'right' : 'left'
-                  }}>
+                  <div className="message-timestamp">
                     {new Date(msg.timestamp).toLocaleTimeString()}
                   </div>
                 </div>
-                
-                {isUserMessage && (
-                  <div className="avatar" style={{backgroundColor: sender.color}}>
-                    {sender.avatar}
-                  </div>
-                )}
               </div>
             );
           })}
           <div ref={messageEndRef} />
         </div>
 
-        <div className="input-area">
+        <div className="meeting-input-area">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -471,20 +368,12 @@ function MeetingRoom() {
                 handleSend();
               }
             }}
-            rows={1} // 减少为1行
-            style={{
-              height: '32px', // 固定高度与发送按钮一致
-              overflow: 'auto' // 允许滚动
-            }}
+            rows={1}
           />
           <button 
             onClick={handleSend} 
             className="send-button"
             disabled={isProcessing}
-            style={{
-              opacity: isProcessing ? 0.6 : 1,
-              cursor: isProcessing ? 'not-allowed' : 'pointer'
-            }}
           >
             {isProcessing ? '处理中...' : '发送'}
           </button>
@@ -494,5 +383,4 @@ function MeetingRoom() {
   );
 }
 
-// 移除内联样式对象，因为我们现在使用CSS类
 export default MeetingRoom;

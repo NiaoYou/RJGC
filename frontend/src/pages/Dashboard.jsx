@@ -315,23 +315,26 @@ function Dashboard({ user }) {
 
 const styles = {
   container: {
-    maxWidth: '850px', // 从800px增加到850px
+    maxWidth: '850px',
     margin: '0 auto',
-    padding: '40px 0',
-    height: '100%', // 填满父元素高度
+    padding: '40px 20px', // 添加左右内边距
+    height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    // 确保这里没有背景定义
     background: 'transparent',
+    width: '100%', // 确保容器占满可用宽度
+    boxSizing: 'border-box', // 确保padding不会增加总宽度
+    overflowX: 'hidden', // 防止水平溢出
   },
   slidesContainer: {
     position: 'relative',
-    marginBottom: '10px', // 从60px减少到30px
+    marginBottom: '10px',
     overflow: 'hidden',
     borderRadius: '16px',
     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
     width: '100%',
-    height: '600px', // 从900px减小到600px
+    height: '600px',
+    maxWidth: '100%', // 确保不超过父容器宽度
   },
   slides: {
     display: 'flex',
