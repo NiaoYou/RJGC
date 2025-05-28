@@ -267,3 +267,27 @@ button.dashboard-button:hover {
 .slides-container {
   height: 500px !important; 
 }
+
+/* 添加响应式设计 */
+@media (max-width: 768px) {
+  .slides-container {
+    height: auto !important;
+    min-height: 500px !important;
+  }
+  
+  .scrolling-prompt {
+    min-width: 200px;
+  }
+  
+  .section-title {
+    font-size: 24px;
+  }
+  
+  .hero-title {
+    font-size: 32px !important;
+  }
+  
+  .hero-subtitle {
+    font-size: 16px !important;
+  }
+}
