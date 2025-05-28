@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function AgentCard({ agent }) {
   const navigate = useNavigate();
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = () => {
     navigate(`/chat/${agent.path}`);
@@ -12,78 +13,71 @@ function AgentCard({ agent }) {
     <div 
       style={{
         ...styles.card,
-        borderTop: `4px solid ${agent.color || '#3498db'}`
+        transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+        boxShadow: isHovered ? '0 6px 20px rgba(0, 0, 0, 0.2)' : '0 2px 4px rgba(0, 0, 0, 0.05)',
       }} 
       onClick={handleClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <div style={{
         ...styles.iconContainer,
-        backgroundColor: agent.color || '#3498db'
+        backgroundColor: '#f7f7f8'
       }}>
         <span style={styles.icon}>{agent.icon}</span>
       </div>
-      <h3 style={styles.name}>{agent.name}</h3>
-      <p style={styles.role}>{agent.role}</p>
-      <button style={{
-        ...styles.chatButton,
-        backgroundColor: agent.color || '#3498db'
-      }}>
-        开始对话
-      </button>
+      <div style={styles.content}>
+        <h3 style={styles.name}>{agent.name}</h3>
+        <p style={styles.role}>{agent.role}</p>
+      </div>
+      <span style={styles.arrow}>→</span>
     </div>
   );
 }
 
 const styles = {
   card: {
-    background: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)',
-    padding: '25px',
+    background: '#ffffff',
+    borderRadius: '16px',
+    border: '1px solid #e5e5e5',
+    padding: '16px',
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
     cursor: 'pointer',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-    border: '1px solid #eee',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
   },
   iconContainer: {
-    width: '60px',
-    height: '60px',
-    borderRadius: '12px',
+    width: '40px',
+    height: '40px',
+    borderRadius: '8px',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: '15px',
+    marginRight: '16px',
   },
   icon: {
-    fontSize: '28px',
-    color: 'white',
+    fontSize: '20px',
+  },
+  content: {
+    flex: 1,
   },
   name: {
-    fontSize: '18px',
+    fontSize: '16px',
     fontWeight: '600',
-    margin: '0 0 8px 0',
-    color: '#333',
+    margin: '0 0 4px 0',
+    color: '#000000',
   },
   role: {
     fontSize: '14px',
-    color: '#666',
-    margin: '0 0 20px 0',
-    textAlign: 'center',
-    lineHeight: 1.5,
+    color: '#444654',
+    margin: 0,
   },
-  chatButton: {
-    width: '100%',
-    padding: '10px',
-    border: 'none',
-    borderRadius: '8px',
-    color: 'white',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'opacity 0.2s',
-    marginTop: 'auto',
-  },
+  arrow: {
+    fontSize: '16px',
+    opacity: 0.5,
+    marginLeft: '8px',
+  }
 };
 
 export default AgentCard;
