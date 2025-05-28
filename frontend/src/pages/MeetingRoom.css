@@ -1,55 +1,434 @@
-/* 会议室样式 */
-.markdown-content pre {
-  background-color: rgba(0, 0, 0, 0.05);
-  padding: 10px;
-  border-radius: 5px;
-  overflow-x: auto;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 13px;
-}
-
-.markdown-content code {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 90%;
-  background-color: rgba(0, 0, 0, 0.05);
-  padding: 2px 4px;
-  border-radius: 3px;
-}
-
-.markdown-content table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 10px 0;
-}
-
-.markdown-content th, 
-.markdown-content td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-.markdown-content th {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-/* 消息动画 */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
+/* 会议室样式 - 与聊天页面保持一致 */
 .message-container {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  position: relative;
   animation: fadeIn 0.3s ease-out;
 }
 
-/* 思考中动画 */
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+/* 消息包装器 - 包含名称、气泡和时间戳 */
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
 }
 
-.thinking {
-  animation: pulse 1.5s infinite;
+/* 用户消息的消息包装器靠右对齐 */
+.user-message .message-wrapper {
+  margin-left: auto;
+}
+
+/* 消息气泡样式 */
+.message {
+  max-width: 100%;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  position: relative;
+  padding: 8px 12px;
+  line-height: 1.4;
+  border-radius: 12px;
+  word-break: break-word;
+  white-space: pre-wrap;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  max-height: 400px; /* 设置最大高度，超出时显示滚动条 */
+}
+
+/* 隐藏原来的时间戳 */
+.timestamp {
+  display: none !important;
+}
+
+/* 用户消息样式 */
+.user-message .message {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+  background-color: rgb(52, 60, 207) !important;
+  color: #ffffff !important;
+}
+
+/* 系统消息样式 - 中间顶部显示 */
+.system-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px 0 20px 0;
+  width: 100%;
+}
+
+.system-message .message {
+  background-color: transparent !important;
+  color: rgb(52, 60, 207) !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-style: normal; /* 移除斜体 */
+  text-align: center;
+  max-width: 90% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-left: none !important; /* 确保没有左侧边框 */
+}
+
+/* 系统消息不显示头像 */
+.system-message .avatar {
+  display: none !important;
+}
+
+/* 系统消息不显示时间戳 */
+.system-message .timestamp {
+  display: none !important;
+}
+
+/* 系统消息不显示复制按钮 */
+.system-message .copy-button {
+  display: none !important;
+}
+
+/* 为Webkit浏览器(Chrome, Safari等)设置滚动条样式 */
+.message::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.message::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.message::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+/* 复制按钮样式 - 与聊天页面保持一致 */
+.copy-button {
+  opacity: 0 !important;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+  visibility: hidden;
+  background-color: rgba(230, 230, 250, 0.9) !important; /* 浅紫色背景 */
+  color: #6a5acd !important; /* 文字颜色为紫色 */
+  border: 1px solid #d8d4f2 !important;
+  border-radius: 12px !important;
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  
+  /* 绝对定位 - 调整位置 */
+  position: absolute !important;
+  top: 4px !important; /* 减小顶部距离 */
+  right: 4px !important; /* 减小右侧距离 */
+  z-index: 10 !important; /* 确保按钮在内容上方 */
+}
+
+/* 鼠标悬停在消息气泡上时显示复制按钮 */
+.message:hover .copy-button {
+  opacity: 0.9 !important;
+  visibility: visible !important;
+}
+
+/* 鼠标悬停在复制按钮上时增加不透明度和轻微阴影 */
+.copy-button:hover {
+  opacity: 1 !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 确保复制成功时按钮可见 */
+.copy-button.copied {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background-color: #e6f7e6 !important; /* 成功状态使用浅绿色背景 */
+  color: #4caf50 !important; /* 成功状态使用绿色文字 */
+  border-color: #c8e6c9 !important;
+}
+
+/* 时间戳样式 */
+.message-timestamp {
+  font-size: 10px;
+  font-style: italic;
+  color: rgb(52, 60, 207);
+  opacity: 0.8;
+  margin-top: 6px; /* 与气泡的垂直距离 */
+}
+
+/* 用户消息的时间戳右对齐并增加右侧距离 */
+.user-message .message-timestamp {
+  text-align: right;
+  padding-right: 10px; /* 右侧距离，您可以调整这个值 */
+}
+
+/* 其他消息的时间戳左对齐并增加左侧距离 */
+.message-container:not(.user-message) .message-timestamp {
+  text-align: left;
+  padding-left: 10px; /* 左侧距离，您可以调整这个值 */
+}
+
+/* 输入区域样式 */
+.input-area {
+  display: flex;
+  gap: 10px;
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  background-color: #fff;
+  align-items: flex-end; /* 使元素底部对齐 */
+}
+
+/* 输入框样式 - 减小高度并隐藏滚动条 */
+.input-textarea {
+  flex: 1;
+  padding: 6px 10px; /* 减小内边距 */
+  border-radius: 10px;
+  border: 1px solid rgb(52, 60, 207); /* 使用指定的蓝紫色边框 */
+  font-size: 16px; /* 增加字体大小 */
+  resize: none;
+  min-height: 10px !important; /* 减小最小高度 */
+  max-height: 100px;
+  font-family: inherit;
+  line-height: 1.2; /* 减小行高 */
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  height: 32px !important; /* 固定高度与发送按钮一致 */
+  overflow-y: auto; /* 允许垂直滚动 */
+  scrollbar-width: thin; /* Firefox 细滚动条 */
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent; /* Firefox 滚动条颜色 */
+}
+
+/* 为Webkit浏览器(Chrome, Safari等)设置输入框滚动条样式 */
+.input-textarea::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.input-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.input-textarea::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+/* 隐藏滚动条，但保持功能 */
+.input-textarea:not(:focus):not(:hover) {
+  scrollbar-width: none; /* Firefox */
+}
+
+.input-textarea:not(:focus):not(:hover)::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome, Safari, Edge */
+}
+
+/* 输入框聚焦时的样式 */
+.input-textarea:focus {
+  border-color: rgb(52, 60, 207);
+  box-shadow: 0 0 0 2px rgba(52, 60, 207, 0.2);
+}
+
+/* 发送按钮样式 */
+.send-button {
+  background-color: rgb(52, 60, 207); /* 使用相同的蓝紫色 */
+  color: #fff;
+  border: none;
+  height: 32px; /* 减小高度 */
+  padding: 0 15px; /* 减小左右内边距 */
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 16px; /* 增加字体大小 */
+  transition: all 0.2s ease; /* 添加过渡效果 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 发送按钮悬停效果 */
+.send-button:hover {
+  background-color: rgb(42, 50, 187) !important; /* 稍微深一点的蓝紫色 */
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 返回按钮样式 */
+.back-button {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  color: rgb(52, 60, 207); /* 使用蓝紫色 */
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease; /* 添加过渡效果 */
+}
+
+/* 返回按钮悬停效果 */
+.back-button:hover {
+  background-color: rgba(52, 60, 207, 0.1) !important; /* 蓝紫色半透明背景 */
+  transform: translateY(-1px) !important; /* 减小上移距离 */
+  box-shadow: 0 2px 5px rgba(52, 60, 207, 0.2) !important; /* 蓝紫色阴影 */
+}
+
+/* 清除按钮样式 */
+.clear-button {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  color: rgb(52, 60, 207); /* 使用蓝紫色 */
+  transition: all 0.2s ease; /* 添加过渡效果 */
+}
+
+/* 清除按钮悬停效果 */
+.clear-button:hover {
+  background-color: rgba(52, 60, 207, 0.1) !important; /* 蓝紫色半透明背景 */
+  transform: translateY(-1px) !important; /* 减小上移距离 */
+  box-shadow: 0 2px 5px rgba(52, 60, 207, 0.2) !important; /* 蓝紫色阴影 */
+}
+
+/* 消息区域样式 */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: #f9f9f9; /* 这里可能是灰色背景的来源，可以修改为白色 */
+}
+
+/* 头像样式 */
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* 页面样式 */
+.page {
+  background: transparent !important;
+  height: 100vh !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 20px !important; /* 添加内边距，四周留出空间 */
+  margin: 0 !important;
+  overflow: hidden !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+/* 聊天框样式 */
+.chat-box {
+  background: #fff;
+  border-radius: 12px !important; /* 恢复圆角 */
+  width: calc(100% - 40px) !important; /* 减去左右内边距 */
+  height: calc(100% - 40px) !important; /* 减去上下内边距 */
+  max-height: calc(100vh - 40px) !important; /* 减去上下内边距 */
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important; /* 恢复阴影效果 */
+  overflow: hidden;
+  margin: 0 !important;
+}
+
+/* 头部样式 */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  background-color: #fff;
+}
+
+/* 标题样式 */
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+/* 代理栏样式 */
+.agent-bar {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  background-color: #fff;
+}
+
+/* 代理图标样式 */
+.agent-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+/* 代理图标悬停效果 */
+.agent-icon:hover {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+/* 发送者名称样式 - 蓝紫色 */
+.sender-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 13px;
+  color: rgb(52, 60, 207) !important; /* 使用蓝紫色 */
+  padding-left: 10px;
+}
+
+/* 移动设备适配 */
+@media (max-width: 768px) {
+  .message-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .message {
+    max-width: 90% !important;
+  }
+  
+  .avatar {
+    margin-bottom: 5px;
+  }
+  
+  .user-message {
+    flex-direction: row-reverse;
+    align-items: flex-start;
+  }
+}
+
+/* 在会议室页面禁用所有滚动条 */
+body.meeting-page {
+  overflow: hidden !important;
+}
+
+/* 确保页面容器不会滚动 */
+.page {
+  overflow: hidden !important;
+}
+
+/* 确保聊天框不会导致滚动 */
+.chat-box {
+  overflow: hidden !important;
 }

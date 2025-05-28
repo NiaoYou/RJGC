@@ -13,6 +13,10 @@
   --hover-color: #f7f7f8;
   --primary-color: #10a37f;
   --sidebar-width: 260px;
+  --glass-background: rgba(255, 255, 255, 0.7);
+  --glass-blur: blur(10px);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 body {
@@ -35,6 +39,21 @@ button {
   transition: all 0.2s ease;
   border: none;
   background: none;
+}
+
+/* 修改全局按钮悬停样式，避免与特定按钮冲突 */
+button:hover:not(.dashboard-button):not(.send-button):not([class*="collapse"]):not([class*="logout"]) {
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* 为侧边栏按钮添加特定的悬停样式 */
+button.sidebar-button:hover {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+  color: rgb(52, 60, 207) !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 /* 现代按钮样式 */
@@ -123,4 +142,46 @@ button {
   text-align: center;
   max-width: 600px;
   margin: 0 auto 40px;
+}
+
+/* 毛玻璃效果的通用类 */
+.glass-effect {
+  background: var(--glass-background);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* 为不支持backdrop-filter的浏览器提供备用样式 */
+@supports not (backdrop-filter: blur(10px)) {
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.9);
+  }
+}
+
+/* 全局样式 - 允许整页滚动 */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  min-height: 100vh;
+  overflow: auto; /* 允许整页滚动 */
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(102, 121, 245, 0.22) 100%);
+  background-attachment: fixed;
+}
+
+/* 会议室页面特殊处理 */
+body.meeting-page {
+  overflow: hidden !important;
+}
+
+/* 确保#root容器填满整个视口 */
+#root {
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  background: transparent;
 }

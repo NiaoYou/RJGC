@@ -1,39 +1,324 @@
-/* Markdown 内容样式调整 */
+/* 用户消息样式 - 移除头像后的调整 */
+.user-message .message-bubble {
+  margin-right: 10px !important;
+  padding: 4px 12px !important; /* 进一步减小内边距 */
+  line-height: 1.2 !important; /* 进一步减小行高 */
+}
+
+/* 消息气泡样式 - 增加字体大小 */
+.message-bubble {
+  max-width: 80% !important;
+  max-height: 400px !important; /* 设置最大高度 */
+  overflow: auto !important; /* 启用滚动 */
+  scrollbar-width: thin; /* Firefox 细滚动条 */
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent; /* Firefox 滚动条颜色 */
+  position: relative !important; /* 作为复制按钮的定位参考 */
+  padding: 4px 12px 2px 12px !important; /* 减少底部内边距 */
+  line-height: 1.2 !important; /* 进一步减小行高 */
+  min-height: auto !important; /* 允许高度自适应内容 */
+  font-size: 16px !important; /* 增加字体大小 */
+}
+
+/* 为Webkit浏览器(Chrome, Safari等)设置滚动条样式 */
+.message-bubble::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.message-bubble::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.message-bubble::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+/* 确保markdown内容可以正确滚动 */
 .markdown-content {
-  line-height: 1.4;
+  width: 100%;
+  overflow-x: auto; /* 允许水平滚动 */
+  margin: 0 !important; /* 移除外边距 */
+  font-size: 16px !important; /* 增加字体大小 */
 }
 
-.markdown-content p {
-  margin: 0.5em 0;
-}
-
-.markdown-content h1, 
-.markdown-content h2, 
-.markdown-content h3, 
-.markdown-content h4, 
-.markdown-content h5, 
-.markdown-content h6 {
-  margin-top: 0.8em;
-  margin-bottom: 0.5em;
-}
-
+/* 确保代码块可以正确滚动 */
 .markdown-content pre {
-  margin: 0.5em 0;
+  background-color: #f6f8fa;
+  border-radius: 6px;
+  padding: 12px;
+  overflow-x: auto; /* 允许代码块水平滚动 */
+  margin: 10px 0;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 15px !important; /* 增加代码块字体大小 */
+  line-height: 1.45;
 }
 
-.markdown-content ul, 
-.markdown-content ol {
-  margin: 0.5em 0;
-  padding-left: 1.5em;
-}
-
-.markdown-content li {
-  margin: 0.2em 0;
+/* 确保表格可以正确滚动 */
+.markdown-content table {
+  display: block; /* 使表格可以滚动 */
+  overflow-x: auto;
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 16px;
 }
 
 .markdown-content code {
-  background-color: #f0f0f0;
-  padding: 0.2em 0.4em;
+  background-color: #f6f8fa;
   border-radius: 3px;
-  font-family: monospace;
+  padding: 0.2em 0.4em;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 90% !important; /* 相对于父元素的字体大小 */
+}
+
+/* 优化 Markdown 渲染样式 */
+.markdown-content h1, .markdown-content h2, .markdown-content h3 {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  font-size: 120% !important; /* 相对于父元素的字体大小 */
+}
+
+.markdown-content h1 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #eaecef;
+}
+
+.markdown-content h2 {
+  font-size: 1.25em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #eaecef;
+}
+
+.markdown-content h3 {
+  font-size: 1em;
+}
+
+.markdown-content ul, .markdown-content ol {
+  padding-left: 2em;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+/* 调整段落边距和行高 */
+.markdown-content p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important; /* 移除段落底部边距 */
+  line-height: 1.2 !important; /* 进一步减小行高 */
+  font-size: 16px !important; /* 增加字体大小 */
+}
+
+.markdown-content blockquote {
+  padding: 0 1em;
+  color: #6a737d;
+  border-left: 0.25em solid #dfe2e5;
+  margin: 0 0 16px 0;
+}
+
+.markdown-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.markdown-content table th, .markdown-content table td {
+  padding: 6px 13px;
+  border: 1px solid #dfe2e5;
+}
+
+.markdown-content table tr {
+  background-color: #fff;
+  border-top: 1px solid #c6cbd1;
+}
+
+.markdown-content table tr:nth-child(2n) {
+  background-color: #f6f8fa;
+}
+
+/* 调整最后一个元素的底部边距 */
+.markdown-content p:last-child,
+.markdown-content ul:last-child,
+.markdown-content ol:last-child,
+.markdown-content blockquote:last-child,
+.markdown-content pre:last-child,
+.markdown-content table:last-child {
+  margin-bottom: 0 !important; /* 移除最后一个元素的底部边距 */
+}
+
+/* 复制按钮样式 - 绝对定位悬停在气泡上 */
+.copy-button {
+  opacity: 0 !important;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+  visibility: hidden;
+  background-color: rgba(230, 230, 250, 0.9) !important; /* 浅紫色背景 */
+  color: #6a5acd !important; /* 文字颜色为紫色 */
+  border: 1px solid #d8d4f2 !important;
+  border-radius: 12px !important;
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  
+  /* 绝对定位 - 调整位置 */
+  position: absolute !important;
+  top: 4px !important; /* 减小顶部距离 */
+  right: 4px !important; /* 减小右侧距离 */
+  z-index: 10 !important; /* 确保按钮在内容上方 */
+}
+
+/* 鼠标悬停在消息气泡上时显示复制按钮 */
+.message-bubble:hover .copy-button {
+  opacity: 0.9 !important;
+  visibility: visible !important;
+}
+
+/* 鼠标悬停在复制按钮上时增加不透明度和轻微阴影 */
+.copy-button:hover {
+  opacity: 1 !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 确保复制成功时按钮可见 */
+.copy-button.copied {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background-color: #e6f7e6 !important; /* 成功状态使用浅绿色背景 */
+  color: #4caf50 !important; /* 成功状态使用绿色文字 */
+  border-color: #c8e6c9 !important;
+}
+
+/* 移动设备适配 */
+@media (max-width: 768px) {
+  .message-wrapper.bot-message {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  
+  .message-bubble {
+    max-width: 90% !important;
+  }
+  
+  .bot-avatar {
+    margin-bottom: 5px !important;
+  }
+  
+  /* 确保用户头像在右侧 */
+  .message-wrapper.user-message {
+    flex-direction: row-reverse !important;
+    align-items: flex-start !important;
+  }
+  
+  .user-avatar {
+    margin-left: 5px !important;
+  }
+}
+
+/* 滚动条样式 */
+.messages-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 错误消息样式 */
+.error-message {
+  background-color: #fff8f8 !important;
+  border-left: 4px solid #dc3545 !important;
+}
+
+/* 系统消息样式 */
+.system-message {
+  font-style: italic;
+  background-color: #f8f9fa !important;
+  border-left: 4px solid #6c757d !important;
+}
+
+/* 输入框样式调整 - 进一步减小高度 */
+.chat-input {
+  min-height: 10px !important; /* 进一步减小最小高度 */
+  max-height: 100px !important; /* 限制最大高度 */
+  border-color: rgb(52, 60, 207) !important; /* 使用指定的蓝紫色边框 */
+  border-width: 1px !important; /* 确保边框宽度合适 */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  padding: 8px 12px !important; /* 减小内边距 */
+  line-height: 1.2 !important; /* 减小行高 */
+  vertical-align: middle !important; /* 垂直居中对齐 */
+}
+
+/* 输入框聚焦时的样式 */
+.chat-input:focus {
+  border-color: rgb(52, 60, 207) !important;
+  box-shadow: 0 0 0 2px rgba(52, 60, 207, 0.2) !important;
+}
+
+/* 时间戳样式 */
+.timestamp {
+  position: absolute !important;
+  font-size: 10px !important;
+  font-style: italic !important;
+  color: rgb(52, 60, 207) !important;
+  z-index: 10 !important; /* 确保在其他元素上方 */
+  opacity: 0.8 !important; /* 稍微透明一点 */
+  visibility: visible !important;
+}
+
+/* 用户消息的时间戳位置 */
+.user-message .timestamp {
+  right: 20px !important; /* 与气泡右侧对齐 */
+  left: auto !important;
+}
+
+/* 机器人消息的时间戳位置 */
+.bot-message .timestamp {
+  left: 55px !important; /* 向右移动，从12px增加到40px */
+  right: auto !important;
+  bottom: -16px !important; /* 紧贴气泡底部 */
+}
+
+/* 增加消息容器的底部边距 */
+.message-wrapper {
+  margin-bottom: 24px !important; /* 为时间戳留出空间 */
+  position: relative !important; /* 添加相对定位，作为时间戳的定位参考 */
+}
+
+/* 返回按钮悬停效果 */
+.back-button:hover {
+  background-color: rgba(52, 60, 207, 0.1) !important; /* 蓝紫色半透明背景 */
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 5px rgba(52, 60, 207, 0.2) !important; /* 蓝紫色阴影 */
+}
+
+/* 清除按钮悬停效果 */
+.clear-button:hover {
+  background-color: rgba(52, 60, 207, 0.1) !important; /* 蓝紫色半透明背景 */
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 5px rgba(52, 60, 207, 0.2) !important; /* 蓝紫色阴影 */
+}
+
+/* 发送按钮悬停效果 */
+.send-button:hover {
+  background-color: rgb(42, 50, 187) !important; /* 稍微深一点的蓝紫色 */
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 确保发送按钮不受全局按钮悬停样式影响 */
+button.send-button:hover {
+  background-color: rgb(42, 50, 187) !important; /* 保持背景色 */
+  color: #ffffff !important; /* 保持文字颜色 */
 }

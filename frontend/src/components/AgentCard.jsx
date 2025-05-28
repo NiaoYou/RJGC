@@ -4,25 +4,24 @@ import { useNavigate } from 'react-router-dom';
 function AgentCard({ agent }) {
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
-
-  const handleClick = () => {
-    navigate(`/chat/${agent.path}`);
-  };
-
+  
   return (
     <div 
-      style={{
-        ...styles.card,
-        transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-        boxShadow: isHovered ? '0 6px 20px rgba(0, 0, 0, 0.2)' : '0 2px 4px rgba(0, 0, 0, 0.05)',
-      }} 
-      onClick={handleClick}
+      onClick={() => navigate(`/chat/${agent.path}`)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      style={{
+        ...styles.card,
+        transform: isHovered ? 'translateY(-5px)' : 'translateY(0)',
+        boxShadow: isHovered ? '0 8px 16px rgba(0, 0, 0, 0.1)' : styles.card.boxShadow,
+        borderColor: isHovered ? 'rgb(52, 60, 207)' : '#e5e5e5',
+        transition: 'all 0.3s ease'
+      }}
     >
       <div style={{
         ...styles.iconContainer,
-        backgroundColor: '#f7f7f8'
+        backgroundColor: isHovered ? 'rgb(52, 60, 207)' : 'rgba(58, 60, 102, 0.1)', // 使用登录页面的蓝紫色
+        color: isHovered ? '#ffffff' : 'rgb(52, 60, 207)',
       }}>
         <span style={styles.icon}>{agent.icon}</span>
       </div>
@@ -30,7 +29,11 @@ function AgentCard({ agent }) {
         <h3 style={styles.name}>{agent.name}</h3>
         <p style={styles.role}>{agent.role}</p>
       </div>
-      <span style={styles.arrow}>→</span>
+      <span style={{
+        ...styles.arrow,
+        opacity: isHovered ? 1 : 0.5,
+        color: isHovered ? 'rgb(52, 60, 207)' : 'inherit',
+      }}>→</span>
     </div>
   );
 }
@@ -38,9 +41,9 @@ function AgentCard({ agent }) {
 const styles = {
   card: {
     background: '#ffffff',
-    borderRadius: '16px',
+    borderRadius: '20px',
     border: '1px solid #e5e5e5',
-    padding: '16px',
+    padding: '16px 25px',
     display: 'flex',
     alignItems: 'center',
     cursor: 'pointer',
