@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
 
   const handleLogout = () => {
     navigate('/');
@@ -17,34 +18,72 @@ function Layout({ children }) {
   return (
     <div style={styles.wrapper}>
       {/* 左侧导航栏 */}
-      <aside style={styles.sidebar}>
-        <h2 style={styles.logo}>🛠 软件工程平台</h2>
+      <aside style={{
+        ...styles.sidebar,
+        width: collapsed ? '60px' : '260px'
+      }}>
+        <div style={styles.sidebarHeader}>
+          <h2 style={{
+            ...styles.logo,
+            opacity: collapsed ? 0 : 1,
+            width: collapsed ? 0 : 'auto',
+            overflow: 'hidden'
+          }}>DevHub</h2>
+          <button 
+            onClick={() => setCollapsed(!collapsed)}
+            style={styles.collapseButton}
+          >
+            {collapsed ? '→' : '←'}
+          </button>
+        </div>
+
         <nav style={styles.nav}>
           <Link to="/dashboard" style={{
             ...styles.link,
-            ...(isActive('/dashboard') ? styles.activeLink : {})
+            ...(isActive('/dashboard') ? styles.activeLink : {}),
+            justifyContent: collapsed ? 'center' : 'flex-start',
           }}>
             <span style={styles.icon}>📊</span>
-            <span>首页</span>
+            <span style={{
+              ...styles.linkText,
+              display: collapsed ? 'none' : 'block'
+            }}>首页</span>
           </Link>
           <Link to="/documents" style={{
             ...styles.link,
-            ...(isActive('/documents') ? styles.activeLink : {})
+            ...(isActive('/documents') ? styles.activeLink : {}),
+            justifyContent: collapsed ? 'center' : 'flex-start',
           }}>
             <span style={styles.icon}>📂</span>
-            <span>文档管理</span>
+            <span style={{
+              ...styles.linkText,
+              display: collapsed ? 'none' : 'block'
+            }}>文档管理</span>
           </Link>
           <Link to="/meeting" style={{
             ...styles.link,
-            ...(isActive('/meeting') ? styles.activeLink : {})
+            ...(isActive('/meeting') ? styles.activeLink : {}),
+            justifyContent: collapsed ? 'center' : 'flex-start',
           }}>
             <span style={styles.icon}>🏢</span>
-            <span>会议室</span>
+            <span style={{
+              ...styles.linkText,
+              display: collapsed ? 'none' : 'block'
+            }}>会议室</span>
           </Link>
         </nav>
-        <button onClick={handleLogout} style={styles.logout}>
+        
+        <button 
+          onClick={handleLogout} 
+          style={{
+            ...styles.logout,
+            justifyContent: collapsed ? 'center' : 'flex-start',
+          }}
+        >
           <span style={styles.icon}>🚪</span>
-          <span>退出登录</span>
+          <span style={{
+            display: collapsed ? 'none' : 'block'
+          }}>退出登录</span>
         </button>
       </aside>
 
@@ -60,71 +99,84 @@ const styles = {
   wrapper: {
     display: 'flex',
     height: '100vh',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    background: '#f8f9fa',
+    background: '#ffffff',
   },
   sidebar: {
-    width: '240px',
-    backgroundColor: '#2c3e50',
-    color: 'white',
-    padding: '20px 0',
+    backgroundColor: '#ffffff',
+    borderRight: '1px solid #e5e5e5',
+    padding: '16px 0',
     display: 'flex',
     flexDirection: 'column',
-    boxShadow: '2px 0 10px rgba(0,0,0,0.1)',
-    transition: 'all 0.3s ease',
+    transition: 'width 0.3s ease',
+    overflow: 'hidden',
+  },
+  sidebarHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0 16px',
+    marginBottom: '24px',
   },
   logo: {
-    fontSize: '20px',
-    fontWeight: 'bold',
-    margin: '10px 20px 30px',
-    padding: '10px 0',
-    borderBottom: '1px solid rgba(255,255,255,0.1)',
+    fontSize: '30px',
+    fontWeight: '600',
+    transition: 'opacity 0.3s ease, width 0.3s ease',
+  },
+  collapseButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '16px',
+    cursor: 'pointer',
+    color: '#666',
+    padding: '4px 8px',
+    borderRadius: '4px',
   },
   nav: {
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
+    gap: '4px',
   },
   link: {
-    color: 'rgba(255,255,255,0.7)',
+    color: '#202123',
     textDecoration: 'none',
-    fontSize: '16px',
-    padding: '12px 20px',
-    margin: '4px 0',
+    fontSize: '14px',
+    padding: '10px 16px',
     display: 'flex',
     alignItems: 'center',
-    transition: 'all 0.2s',
-    borderLeft: '4px solid transparent',
+    borderRadius: '6px',
+    margin: '0 8px',
+    transition: 'background-color 0.2s',
   },
   activeLink: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    color: 'white',
-    borderLeft: '4px solid #3498db',
+    backgroundColor: '#f7f7f8',
+    fontWeight: '500',
   },
   icon: {
-    marginRight: '10px',
-    fontSize: '18px',
-    width: '24px',
-    textAlign: 'center',
+    marginRight: '12px',
+    fontSize: '16px',
+  },
+  linkText: {
+    whiteSpace: 'nowrap',
   },
   logout: {
     backgroundColor: 'transparent',
-    color: 'rgba(255,255,255,0.7)',
+    color: '#202123',
     border: 'none',
-    padding: '12px 20px',
-    margin: '20px 0 10px',
-    fontSize: '16px',
+    padding: '10px 16px',
+    margin: '8px',
+    fontSize: '14px',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    transition: 'all 0.2s',
-    textAlign: 'left',
+    borderRadius: '6px',
+    transition: 'background-color 0.2s',
   },
   content: {
     flex: 1,
-    padding: '30px',
+    padding: '24px',
     overflowY: 'auto',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
   },
 };
 
