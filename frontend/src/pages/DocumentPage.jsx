@@ -121,9 +121,9 @@ function DocumentPage() {
                       <td style={styles.td}>{(file.size / 1024).toFixed(1)} KB</td>
                       <td style={styles.td}>{file.uploadTime}</td>
                       <td style={styles.td}>
-                        <button onClick={() => handlePreview(file)} style={styles.actionBtn}>👁️ 预览</button>
-                        <button onClick={() => handleDownload(file)} style={styles.actionBtn}>⬇️ 下载</button>
-                        <button onClick={() => handleDelete(file.id)} style={{...styles.actionBtn, backgroundColor: '#dc3545'}}>🗑 删除</button>
+                        <button onClick={() => handlePreview(file)} style={styles.actionBtn}>预览</button>
+                        <button onClick={() => handleDownload(file)} style={styles.actionBtn}>下载</button>
+                        <button onClick={() => handleDelete(file.id)} style={{...styles.actionBtn, backgroundColor: '#dc3545'}}>删除</button>
                       </td>
                     </tr>
                   ))}

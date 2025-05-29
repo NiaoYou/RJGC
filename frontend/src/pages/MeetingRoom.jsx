@@ -272,7 +272,7 @@ function MeetingRoom() {
   };
 
 
-  const handleExportToWord = () => {
+const handleExportToWord = () => {
   // 收集所有Agent的输出（过滤掉思考/错误消息）
   const agentOutputs = messages
     .filter(msg =>
@@ -334,7 +334,27 @@ function MeetingRoom() {
 
   // 生成并下载Word文件
   Packer.toBlob(doc).then(blob => {
-    saveAs(blob, `项目会议记录_${new Date().toISOString().replace(/[:.]/g, '-')}.docx`);
+    //saveAs(blob, `项目会议记录_${new Date().toISOString().replace(/[:.]/g, '-')}.docx`);
+
+    // 将文档内容保存到localStorage
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const wordContent = `# 项目会议记录 (${timestamp})\n\n${agentOutputs.map(output => `### ${output.name}\n\n${output.content}\n\n`).join('\n')}`;
+
+    const savedDocuments = JSON.parse(localStorage.getItem('documents') || '[]');
+    savedDocuments.push({
+      id: Date.now().toString(),
+      name: `项目会议记录_${timestamp}.docx`,
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      size: blob.size,
+      uploadTime: new Date().toLocaleString(),
+      content: wordContent, // 这里存储的是Markdown格式的内容，如果需要可以调整
+      encoding: 'text'
+    });
+    localStorage.setItem('documents', JSON.stringify(savedDocuments));
+
+
+    // 在页面上显示提示信息（alert）
+   alert("✅请在文档管理页面查看!");
   });
 };
 
