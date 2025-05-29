@@ -88,19 +88,6 @@ function DocumentPage() {
         </div>
 
         <div style={styles.content}>
-          <div style={styles.uploadSection}>
-            <label htmlFor="file-upload" style={styles.uploadLabel}>
-              选择文件上传
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              multiple
-              onChange={handleUpload}
-              style={styles.fileInput}
-            />
-          </div>
-
           {files.length > 0 ? (
             <div style={styles.tableContainer}>
               <table style={styles.table}>
@@ -121,9 +108,11 @@ function DocumentPage() {
                       <td style={styles.td}>{(file.size / 1024).toFixed(1)} KB</td>
                       <td style={styles.td}>{file.uploadTime}</td>
                       <td style={styles.td}>
-                        <button onClick={() => handlePreview(file)} style={styles.actionBtn}>预览</button>
-                        <button onClick={() => handleDownload(file)} style={styles.actionBtn}>下载</button>
+                        <div style={styles.actionBtnContainer}>
+                        <button onClick={() => handlePreview(file)} style={{...styles.actionBtn,backgroundColor:'#d9aa1c'}}>预览</button>
+                        <button onClick={() => handleDownload(file)} style={{...styles.actionBtn,backgroundColor:'#2f86d6'}}>下载</button>
                         <button onClick={() => handleDelete(file.id)} style={{...styles.actionBtn, backgroundColor: '#dc3545'}}>删除</button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -135,6 +124,21 @@ function DocumentPage() {
               <p>暂无文档，请上传文件</p>
             </div>
           )}
+
+          <br/>
+          <div style={styles.uploadSection}>
+            <label htmlFor="file-upload" style={styles.uploadLabel}>
+              选择文件上传
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              multiple
+              onChange={handleUpload}
+              style={styles.fileInput}
+            />
+          </div>
+
         </div>
       </div>
 
@@ -284,17 +288,22 @@ const styles = {
   td: {
     padding: '12px 15px',
     fontSize: '14px',
+    verticalAlign:'middle',
+  },
+  actionBtnContainer: { // 新增：用于包裹按钮的容器样式
+    display: 'flex', // 关键：横向排列
+    gap: '8px', // 按钮之间的间距
+    alignItems: 'center', // 可选：垂直对齐
   },
   actionBtn: {
     padding: '6px 12px',
-    marginRight: '6px',
     border: 'none',
-    borderRadius: '6px',
-    backgroundColor: 'rgb(52, 60, 207)',
-    color: '#fff',
+    borderRadius: '4px',
     cursor: 'pointer',
-    fontSize: '12px',
-    transition: 'all 0.2s ease',
+    fontSize: '14px',
+    transition: 'all 0.2s',
+    backgroundColor: '#007bff',
+    color: 'white',
   },
   emptyState: {
     textAlign: 'center',
