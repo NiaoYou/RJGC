@@ -125,7 +125,7 @@ function LoginPage() {
                 />
                 <label htmlFor="rememberMe" style={styles.checkboxLabel}>记住我</label>
               </div>
-              <a href="#" style={styles.forgotPassword}>忘记密码?</a>
+              <a href="" style={styles.forgotPassword}>忘记密码?</a>
             </div>
             
             <button type="submit" style={styles.loginButton}>
