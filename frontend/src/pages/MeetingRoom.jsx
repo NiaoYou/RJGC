@@ -3,6 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { marked } from 'marked';
 import './MeetingRoom.css';
 
+
+import { Document, Paragraph, Packer } from 'docx';
+// 删除这两行
+// import { HeadingLevel, TextRun } from 'docx';
+import { saveAs } from 'file-saver';
+
+
 const agents = [
   { id: 'analyst', name: '需求分析师', avatar: '👨‍💼', color: '#4285F4' },
   { id: 'architect', name: '系统架构师', avatar: '👩‍💻', color: '#EA4335' },
@@ -265,6 +272,108 @@ function MeetingRoom() {
     return agents.find(a => a.id === senderId) || { name: senderId, avatar: '👾', color: '#6c757d' };
   };
 
+
+  const handleExportToWord = () => {
+  // 收集所有Agent的输出（过滤掉思考/错误消息）
+  const agentOutputs = messages
+    .filter(msg =>
+      agents.some(agent => msg.sender === agent.id) &&
+      !msg.thinking &&
+      !msg.isError
+    )
+    .map(msg => {
+      const agent = agents.find(a => a.id === msg.sender);
+      // 过滤掉Markdown和HTML标签，只保留纯文字和换行
+      const cleanText = msg.text
+        .replace(/<[^>]*>/g, '') // 移除HTML标签
+        .replace(/[#*`~_\-+$$$$(){}|\\;]/g, '') // 移除Markdown符号
+        .replace(/\n{3,}/g, '\n\n') // 合并多个换行符为两个
+        .trim();
+      return {
+        name: agent.name,
+        content: cleanText,
+        color: agent.color
+      };
+    });
+
+  if (agentOutputs.length === 0) {
+    alert('没有可导出的Agent输出');
+    return;
+  }
+
+  // 创建Word文档
+  const doc = new Document({
+    sections: [{
+      properties: {},
+      children: [
+        // 主标题
+        new Paragraph({
+          text: "项目会议记录",
+          heading: "Heading1",
+          alignment: "center"
+        }),
+
+        // Agent输出内容
+        ...agentOutputs.flatMap(output => [
+          // Agent名称（普通段落 + 加粗）
+          new Paragraph({
+            text: `${output.name}：`,
+            textRun: {
+              bold: true,
+              color: hexToRgb(output.color)
+            }
+          }),
+
+          // Agent内容（纯文字 + 换行）
+          new Paragraph({
+            text: output.content.replace(/\n/g, '\n\n') // 确保换行生效
+          })
+        ])
+      ]
+    }]
+  });
+
+  // 生成并下载Word文件
+  Packer.toBlob(doc).then(blob => {
+    saveAs(blob, `项目会议记录_${new Date().toISOString().replace(/[:.]/g, '-')}.docx`);
+  });
+};
+
+// 辅助函数：将十六进制颜色转换为RGB格式
+  const hexToRgb = (hex) => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgb(${r},${g},${b})`;
+};
+
+    // md
+  const handleExportToMarkdown = () => {
+    const agentOutputs = messages
+      .filter(msg =>
+        agents.some(agent => msg.sender === agent.id) &&
+        !msg.thinking &&
+        !msg.isError
+      )
+      .sort((a, b) => {
+        const order = { analyst: 0, architect: 1, developer: 2, tester: 3 };
+        return order[a.sender] - order[b.sender];
+      })
+      .map(msg => {
+        const agent = agents.find(a => a.id === msg.sender);
+        return `### ${agent.name}\n\n${msg.text}\n\n`;
+      })
+      .join('\n');
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const markdownContent = `# 项目会议记录 (${timestamp})\n\n${agentOutputs}`;
+
+    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+    saveAs(blob, `项目会议记录_${timestamp}.md`);
+  };
+
+
+
   return (
     <div className="meeting-page-container">
       <div className="meeting-chat-box">
@@ -377,6 +486,21 @@ function MeetingRoom() {
           >
             {isProcessing ? '处理中...' : '发送'}
           </button>
+
+          <button
+              onClick={handleExportToWord}
+              className="send-button"
+              disabled={isProcessing}>
+          生成会议记录(word)
+          </button>
+
+          <button
+              onClick={handleExportToMarkdown}
+              className="send-button"
+              disabled={isProcessing}>
+          生成会议记录(Markdown)
+          </button>
+
         </div>
       </div>
     </div>

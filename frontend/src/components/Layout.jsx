@@ -7,11 +7,11 @@ function Layout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [hoveredLink, setHoveredLink] = useState(null);
 
-  // 在组件内部添加一个检测函数
-  const supportsBackdropFilter = () => {
-    return typeof document !== 'undefined' && 
-           'backdropFilter' in document.documentElement.style;
-  };
+  // 在组件内部添加一个检测函数(未使用,暂时注释掉;eco)
+  // const supportsBackdropFilter = () => {
+  //   return typeof document !== 'undefined' &&
+  //          'backdropFilter' in document.documentElement.style;
+  // };
 
   const handleLogout = () => {
     navigate('/');
