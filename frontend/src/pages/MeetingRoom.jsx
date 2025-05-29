@@ -9,7 +9,6 @@ import { Document, Paragraph, Packer } from 'docx';
 // import { HeadingLevel, TextRun } from 'docx';
 import { saveAs } from 'file-saver';
 
-
 const agents = [
   { id: 'analyst', name: '需求分析师', avatar: '👨‍💼', color: '#4285F4' },
   { id: 'architect', name: '系统架构师', avatar: '👩‍💻', color: '#EA4335' },
@@ -339,6 +338,49 @@ function MeetingRoom() {
   });
 };
 
+  // md
+  const handleExportToMarkdown = () => {
+  // 收集所有Agent的输出（过滤掉思考/错误消息）
+  const agentOutputs = messages
+    .filter(msg =>
+      agents.some(agent => msg.sender === agent.id) &&
+      !msg.thinking &&
+      !msg.isError
+    )
+    .sort((a, b) => {
+      const order = { analyst: 0, architect: 1, developer: 2, tester: 3 };
+      return order[a.sender] - order[b.sender];
+    })
+    .map(msg => {
+      const agent = agents.find(a => a.id === msg.sender);
+      return `### ${agent.name}\n\n${msg.text}\n\n`;
+    })
+    .join('\n');
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const markdownContent = `# 项目会议记录 (${timestamp})\n\n${agentOutputs}`;
+
+  // 保存到 localStorage
+  const savedDocuments = JSON.parse(localStorage.getItem('documents') || '[]');
+  savedDocuments.push({
+    id: Date.now().toString(), // 使用时间戳作为唯一ID
+    name: `项目会议记录_${timestamp}.md`,
+    type: 'text/markdown',
+    size: markdownContent.length,
+    uploadTime: new Date().toLocaleString(),
+    content: markdownContent,
+    encoding: 'text',
+  });
+  localStorage.setItem('documents', JSON.stringify(savedDocuments));
+
+  // 如果需要下载Word文件，可以取消下面的注释
+  /*
+  const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+  saveAs(blob, `项目会议记录_${timestamp}.md`);
+  */
+   alert("✅请在文档管理页面查看!");
+};
+
 // 辅助函数：将十六进制颜色转换为RGB格式
   const hexToRgb = (hex) => {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -346,31 +388,6 @@ function MeetingRoom() {
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgb(${r},${g},${b})`;
 };
-
-    // md
-  const handleExportToMarkdown = () => {
-    const agentOutputs = messages
-      .filter(msg =>
-        agents.some(agent => msg.sender === agent.id) &&
-        !msg.thinking &&
-        !msg.isError
-      )
-      .sort((a, b) => {
-        const order = { analyst: 0, architect: 1, developer: 2, tester: 3 };
-        return order[a.sender] - order[b.sender];
-      })
-      .map(msg => {
-        const agent = agents.find(a => a.id === msg.sender);
-        return `### ${agent.name}\n\n${msg.text}\n\n`;
-      })
-      .join('\n');
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const markdownContent = `# 项目会议记录 (${timestamp})\n\n${agentOutputs}`;
-
-    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
-    saveAs(blob, `项目会议记录_${timestamp}.md`);
-  };
 
 
 
@@ -500,7 +517,6 @@ function MeetingRoom() {
               disabled={isProcessing}>
           生成会议记录(Markdown)
           </button>
-
         </div>
       </div>
     </div>

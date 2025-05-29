@@ -17,9 +17,12 @@
     "mockjs": "^1.1.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-markdown": "^10.1.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.0",
     "react-scripts": "5.0.1",
+    "react-syntax-highlighter": "^15.6.1",
+    "react-toastify": "^11.0.5",
     "software-engineering-platform": "file:",
     "web-vitals": "^2.1.4"
   },
