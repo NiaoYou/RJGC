@@ -49,6 +49,7 @@ function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const messageEndRef = useRef(null);
   const inputRef = useRef(null);
+  // 如果不需要检测移动设备，删除这行
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   // 获取当前角色配置
