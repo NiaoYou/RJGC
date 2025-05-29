@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './DocumentPage.css';
 
 function DocumentPage() {
@@ -8,10 +11,8 @@ function DocumentPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const saved = localStorage.getItem('documents');
-    if (saved) {
-      setFiles(JSON.parse(saved));
-    }
+    const savedDocuments = JSON.parse(localStorage.getItem('documents') || '[]');
+    setFiles(savedDocuments);
   }, []);
 
   const saveToLocal = (fileList) => {
@@ -26,6 +27,7 @@ function DocumentPage() {
       const reader = new FileReader();
       reader.onload = () => {
         const fileData = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9), // 更加唯一的ID
           name: file.name,
           type: file.type,
           size: file.size,
@@ -45,28 +47,37 @@ function DocumentPage() {
     });
   };
 
-  const handleDelete = (name) => {
-    const updated = files.filter(file => file.name !== name);
+  const handleDelete = (id) => {
+    const updated = files.filter(file => file.id !== id);
     saveToLocal(updated);
   };
 
   const handleDownload = (file) => {
+    const blob = new Blob([file.content], { type: file.type || 'text/plain' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = file.content;
+    link.href = url;
     link.download = file.name;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handlePreview = (file) => {
     setPreviewFile(file);
   };
 
+  const closeModal = () => {
+    setPreviewFile(null);
+  };
+
   return (
     <div style={styles.page}>
       <div style={styles.chatBox}>
         <div style={styles.header}>
-          <button 
-            onClick={() => navigate('/dashboard')} 
+          <button
+            onClick={() => navigate('/dashboard')}
             style={styles.backBtn}
             className="back-button"
           >
@@ -81,12 +92,12 @@ function DocumentPage() {
             <label htmlFor="file-upload" style={styles.uploadLabel}>
               选择文件上传
             </label>
-            <input 
-              id="file-upload" 
-              type="file" 
-              multiple 
-              onChange={handleUpload} 
-              style={styles.fileInput} 
+            <input
+              id="file-upload"
+              type="file"
+              multiple
+              onChange={handleUpload}
+              style={styles.fileInput}
             />
           </div>
 
@@ -103,8 +114,8 @@ function DocumentPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {files.map((file, idx) => (
-                    <tr key={idx} style={styles.tr}>
+                  {files.map((file) => (
+                    <tr key={file.id} style={styles.tr}>
                       <td style={styles.td}>{file.name}</td>
                       <td style={styles.td}>{file.type}</td>
                       <td style={styles.td}>{(file.size / 1024).toFixed(1)} KB</td>
@@ -112,7 +123,7 @@ function DocumentPage() {
                       <td style={styles.td}>
                         <button onClick={() => handlePreview(file)} style={styles.actionBtn}>👁️ 预览</button>
                         <button onClick={() => handleDownload(file)} style={styles.actionBtn}>⬇️ 下载</button>
-                        <button onClick={() => handleDelete(file.name)} style={{...styles.actionBtn, backgroundColor: '#dc3545'}}>🗑 删除</button>
+                        <button onClick={() => handleDelete(file.id)} style={{...styles.actionBtn, backgroundColor: '#dc3545'}}>🗑 删除</button>
                       </td>
                     </tr>
                   ))}
@@ -129,14 +140,35 @@ function DocumentPage() {
 
       {/* 页面内预览弹窗 */}
       {previewFile && (
-        <div style={styles.modalOverlay} onClick={() => setPreviewFile(null)}>
+        <div style={styles.modalOverlay} onClick={closeModal}>
           <div style={styles.modal} onClick={e => e.stopPropagation()}>
             <h3 style={styles.modalTitle}>预览：{previewFile.name}</h3>
             <div style={styles.modalContent}>
               {previewFile.encoding === 'text' ? (
-                <pre style={styles.textPreview}>
-                  {previewFile.content}
-                </pre>
+                <div style={styles.textPreview}>
+                  <ReactMarkdown
+                    children={previewFile.content}
+                    components={{
+                      code({node, inline, className, children, ...props}) {
+                        const match = /language-(\w+)/.exec(className || '');
+                        return !inline && match ? (
+                          <SyntaxHighlighter
+                            style={vscDarkPlus}
+                            language={match[1]}
+                            PreTag="div"
+                            {...props}
+                          >
+                            String(children).replace(/\n$/, '')
+                          </SyntaxHighlighter>
+                        ) : (
+                         <code className={className} {...props}>
+                            {children}
+                          </code>
+                        );
+                      },
+                    }}
+                  />
+                </div>
               ) : previewFile.type.startsWith('image/') ? (
                 <img src={previewFile.content} alt={previewFile.name} style={styles.imagePreview} />
               ) : previewFile.type === 'application/pdf' ? (
@@ -145,7 +177,7 @@ function DocumentPage() {
                 <p style={styles.unsupportedFormat}>❌ 暂不支持预览该格式。</p>
               )}
             </div>
-            <button onClick={() => setPreviewFile(null)} style={styles.closeBtn}>关闭</button>
+            <button onClick={closeModal} style={styles.closeBtn}>关闭</button>
           </div>
         </div>
       )}
