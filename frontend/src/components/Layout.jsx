@@ -7,12 +7,6 @@ function Layout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [hoveredLink, setHoveredLink] = useState(null);
 
-  // 在组件内部添加一个检测函数(未使用,暂时注释掉;eco)
-  // const supportsBackdropFilter = () => {
-  //   return typeof document !== 'undefined' &&
-  //          'backdropFilter' in document.documentElement.style;
-  // };
-
   const handleLogout = () => {
     navigate('/');
   };
@@ -195,6 +189,7 @@ function Layout({ children }) {
             style={{ 
               width: '16px', 
               height: '16px',
+              marginRight: collapsed ? '0' : '10px',
               filter: hoveredLink === 'logout' ? 
                 'invert(23%) sepia(90%) saturate(1352%) hue-rotate(226deg) brightness(89%) contrast(87%)' : 
                 'invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(30%) contrast(100%)',
@@ -202,6 +197,7 @@ function Layout({ children }) {
             }} 
           />
           <span style={{
+            ...styles.linkText,
             display: collapsed ? 'none' : 'block'
           }}>退出登录</span>
         </button>
@@ -210,8 +206,8 @@ function Layout({ children }) {
       {/* 主内容区 - 根据页面路径应用不同样式 */}
       <main style={{
         ...styles.content,
-        // 如果是会议室页面，应用特殊样式
-        ...(isMeetingPage ? {
+        // 如果是会议室页面或文档页面，应用特殊样式
+        ...((isMeetingPage || location.pathname === '/documents') ? {
           backgroundColor: 'transparent',
           background: 'none',
           backdropFilter: 'none',
@@ -225,10 +221,11 @@ function Layout({ children }) {
           height: '100vh',
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'center',
+          alignItems: 'flex-start', // 对文档页面使用flex-start
+          paddingTop: '12px', // 与侧边栏对齐
         } : {
-          // 确保非会议室页面的内容区域可以滚动
-          overflowY: 'auto'
+          // 确保非特殊页面的内容区域可以滚动
+          //overflowY: 'auto'
         })
       }}>
         {children}
@@ -263,7 +260,7 @@ const styles = {
   content: {
     flex: 1,
     padding: '24px',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: 'transparent',
     backdropFilter: 'blur(10px)',
     WebkitBackdropFilter: 'blur(10px)',
     borderRadius: '12px',
@@ -302,11 +299,12 @@ const styles = {
   link: {
     display: 'flex',
     alignItems: 'center',
-    padding: '10px',
+    padding: '12px', // 增加内边距
     borderRadius: '8px',
     textDecoration: 'none',
     color: '#202123',
     transition: 'all 0.2s ease',
+    fontSize: '15px', // 增加字体大小
   },
   activeLink: {
     backgroundColor: 'rgba(52, 60, 207, 0.1)',
@@ -315,16 +313,18 @@ const styles = {
   },
   linkText: {
     transition: 'opacity 0.3s ease',
+    fontSize: '15px', // 增加字体大小
   },
   logout: {
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
-    padding: '10px',
+    padding: '12px', // 增加内边距
     borderRadius: '8px',
     textAlign: 'left',
     marginTop: 'auto',
     transition: 'all 0.2s ease',
+    fontSize: '15px', // 增加字体大小
   },
 };
 

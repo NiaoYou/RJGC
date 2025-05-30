@@ -145,7 +145,7 @@ function Dashboard({ user }) {
                 key={index}
                 style={{
                   ...styles.indicator,
-                  backgroundColor: activePane === index ? 'rgb(52, 60, 207)' : '#e5e5e5'
+                  backgroundColor: activePane === index ? 'rgba(52, 60, 207, 0.6)' : '#e5e5e5'
                 }}
                 onClick={() => handlePaneChange(index)}
               />
@@ -283,7 +283,7 @@ function Dashboard({ user }) {
                       onMouseEnter={() => handlePromptHover(rowIndex, promptIndex, true)}
                       onMouseLeave={() => handlePromptHover(rowIndex, promptIndex, false)}
                       onClick={() => navigate('/meeting')}
-                      style={{backgroundColor: 'rgba(255, 255, 255, 0.1)'}}
+                      style={{backgroundColor: 'rgba(255, 255, 255, 0.4)'}}
                     >
                       <span>{prompt}</span>
                       <span className="prompt-arrow">→</span>
@@ -297,7 +297,7 @@ function Dashboard({ user }) {
                       onMouseEnter={() => handlePromptHover(rowIndex, promptIndex, true)}
                       onMouseLeave={() => handlePromptHover(rowIndex, promptIndex, false)}
                       onClick={() => navigate('/meeting')}
-                      style={{backgroundColor: 'rgba(255, 255, 255, 0.1)'}}
+                      style={{backgroundColor: 'rgba(255, 255, 255, 0.4)'}}
                     >
                       <span>{prompt}</span>
                       <span className="prompt-arrow">→</span>
@@ -393,7 +393,7 @@ const styles = {
     width: '10px',
     height: '10px',
     borderRadius: '50%',
-    border: 'none',
+    border: '0.5px solid rgba(52, 60, 207, 0.5)', // 添加边框
     padding: 0,
     cursor: 'pointer',
     transition: 'background-color 0.3s ease',
