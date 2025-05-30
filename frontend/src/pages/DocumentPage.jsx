@@ -8,6 +8,7 @@ import './DocumentPage.css';
 function DocumentPage() {
   const [files, setFiles] = useState([]);
   const [previewFile, setPreviewFile] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -113,6 +114,11 @@ function DocumentPage() {
     }
   };
 
+  // 切换下拉菜单的函数
+  const toggleMenu = (id) => {
+    setOpenMenuId(openMenuId === id ? null : id);
+  };
+
   return (
     <div style={styles.page}>
       <div style={styles.chatBox}>
@@ -152,19 +158,52 @@ function DocumentPage() {
                         <div style={styles.actionBtnContainer}>
                           <button 
                             onClick={() => handlePreview(file)} 
-                            className="actionBtn preview-btn"
-                            style={{...styles.actionBtn}}
-                          >预览</button>
+                            className="icon-btn preview-btn"
+                            title="预览"
+                            style={styles.iconBtn}
+                          >
+                            <img 
+                              src="/icons/preview.svg" 
+                              alt="预览" 
+                              style={{ 
+                                width: '16px', 
+                                height: '16px',
+                                filter: 'invert(23%) sepia(90%) saturate(1352%) hue-rotate(226deg) brightness(89%) contrast(87%)' // 使SVG颜色与主题色匹配
+                              }} 
+                            />
+                          </button>
                           <button 
                             onClick={() => handleDownload(file)} 
-                            className="actionBtn download-btn"
-                            style={{...styles.actionBtn}}
-                          >下载</button>
+                            className="icon-btn download-btn"
+                            title="下载"
+                            style={styles.iconBtn}
+                          >
+                            <img 
+                              src="/icons/download.svg" 
+                              alt="下载" 
+                              style={{ 
+                                width: '16px', 
+                                height: '16px',
+                                filter: 'invert(23%) sepia(90%) saturate(1352%) hue-rotate(226deg) brightness(89%) contrast(87%)' // 使SVG颜色与主题色匹配
+                              }} 
+                            />
+                          </button>
                           <button 
                             onClick={() => handleDelete(file.id)} 
-                            className="actionBtn delete-btn"
-                            style={{...styles.actionBtn}}
-                          >删除</button>
+                            className="icon-btn delete-btn"
+                            title="删除"
+                            style={styles.iconBtn}
+                          >
+                            <img 
+                              src="/icons/delete.svg" 
+                              alt="删除" 
+                              style={{ 
+                                width: '16px', 
+                                height: '16px',
+                                filter: 'invert(23%) sepia(90%) saturate(1352%) hue-rotate(226deg) brightness(89%) contrast(87%)' // 使SVG颜色与主题色匹配
+                              }} 
+                            />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -330,7 +369,7 @@ const styles = {
   },
   th: {
     padding: '12px 15px',
-    textAlign: 'left',
+    textAlign: 'center', // 将文字对齐方式从左对齐改为居中
     backgroundColor: '#f8f9fa',
     borderBottom: '1px solid #e9ecef',
     color: '#495057',
@@ -345,22 +384,26 @@ const styles = {
     fontSize: '14px',
     verticalAlign:'middle',
   },
-  actionBtnContainer: { // 新增：用于包裹按钮的容器样式
-    display: 'flex', // 关键：横向排列
-    gap: '10px', // 增加按钮之间的间距
-    alignItems: 'center', // 可选：垂直对齐
+  actionBtnContainer: {
+    display: 'flex',
+    gap: '12px',
+    justifyContent: 'center',
   },
-  actionBtn: {
-    padding: '6px 14px',
+  iconBtn: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     border: 'none',
-    borderRadius: '6px',
+    background: 'transparent',
     cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '500',
-    letterSpacing: '0.3px',
     transition: 'all 0.2s ease',
-    color: 'white',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    position: 'relative',
+  },
+  btnIcon: {
+    fontSize: '16px',
   },
   emptyState: {
     textAlign: 'center',
