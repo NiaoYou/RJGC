@@ -1,4 +1,4 @@
-/* 全局样式 - OpenAI风格 */
+/* 全局样式 */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -41,9 +41,8 @@ button {
   background: none;
 }
 
-/* 修改全局按钮悬停样式，避免与特定按钮冲突 */
-button:hover:not(.dashboard-button):not(.send-button):not([class*="collapse"]):not([class*="logout"]) {
-  background: rgba(255, 255, 255, 0.35);
+/* 修改全局按钮悬停样式 - 移除背景色变化，保留上移和阴影效果 */
+button:hover:not(.dashboard-button):not(.send-button):not(.actionBtn):not(.sidebar-button):not([class*="collapse"]):not([class*="logout"]) {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }

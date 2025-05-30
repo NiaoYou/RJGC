@@ -18,6 +18,8 @@ function Layout({ children }) {
 
   // 检查当前是否在会议室页面
   const isMeetingPage = location.pathname === '/meeting';
+  // 检查当前是否在聊天页面
+  const isChatPage = location.pathname.includes('/chat');
 
   return (
     <div style={styles.wrapper}>
@@ -206,8 +208,8 @@ function Layout({ children }) {
       {/* 主内容区 - 根据页面路径应用不同样式 */}
       <main style={{
         ...styles.content,
-        // 如果是会议室页面或文档页面，应用特殊样式
-        ...((isMeetingPage || location.pathname === '/documents') ? {
+        // 如果是会议室页面、文档页面或聊天页面，应用特殊样式
+        ...((isMeetingPage || location.pathname === '/documents' || isChatPage) ? {
           backgroundColor: 'transparent',
           background: 'none',
           backdropFilter: 'none',
