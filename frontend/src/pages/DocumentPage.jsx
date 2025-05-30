@@ -72,6 +72,47 @@ function DocumentPage() {
     setPreviewFile(null);
   };
 
+  // 添加一个辅助函数，将MIME类型或文件名转换为简单格式
+  const getSimpleFileType = (file) => {
+    // 从文件名获取扩展名
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    
+    // 从MIME类型获取格式
+    let mimeFormat = '';
+    if (file.type) {
+      // 处理常见MIME类型
+      if (file.type.includes('markdown')) return 'Markdown';
+      if (file.type.includes('word')) return 'Word';
+      if (file.type.includes('pdf')) return 'PDF';
+      if (file.type.includes('image')) return file.type.split('/')[1].toUpperCase();
+      if (file.type.includes('text/plain')) return 'TXT';
+      
+      // 从MIME类型中提取格式部分
+      mimeFormat = file.type.split('/').pop();
+    }
+    
+    // 优先使用文件扩展名，因为它通常更准确
+    switch (fileExtension) {
+      case 'md': return 'Markdown';
+      case 'docx': return 'Word';
+      case 'doc': return 'Word';
+      case 'pdf': return 'PDF';
+      case 'txt': return 'TXT';
+      case 'jpg': case 'jpeg': return 'JPG';
+      case 'png': return 'PNG';
+      case 'gif': return 'GIF';
+      case 'html': return 'HTML';
+      case 'css': return 'CSS';
+      case 'js': return 'JavaScript';
+      case 'json': return 'JSON';
+      case 'xml': return 'XML';
+      case 'csv': return 'CSV';
+      case 'xlsx': case 'xls': return 'Excel';
+      case 'pptx': case 'ppt': return 'PowerPoint';
+      default: return mimeFormat || fileExtension.toUpperCase() || '未知';
+    }
+  };
+
   return (
     <div style={styles.page}>
       <div style={styles.chatBox}>
@@ -104,14 +145,26 @@ function DocumentPage() {
                   {files.map((file) => (
                     <tr key={file.id} style={styles.tr}>
                       <td style={styles.td}>{file.name}</td>
-                      <td style={styles.td}>{file.type}</td>
+                      <td style={styles.td}>{getSimpleFileType(file)}</td>
                       <td style={styles.td}>{(file.size / 1024).toFixed(1)} KB</td>
                       <td style={styles.td}>{file.uploadTime}</td>
                       <td style={styles.td}>
                         <div style={styles.actionBtnContainer}>
-                        <button onClick={() => handlePreview(file)} style={{...styles.actionBtn,backgroundColor:'#d9aa1c'}}>预览</button>
-                        <button onClick={() => handleDownload(file)} style={{...styles.actionBtn,backgroundColor:'#2f86d6'}}>下载</button>
-                        <button onClick={() => handleDelete(file.id)} style={{...styles.actionBtn, backgroundColor: '#dc3545'}}>删除</button>
+                          <button 
+                            onClick={() => handlePreview(file)} 
+                            className="actionBtn preview-btn"
+                            style={{...styles.actionBtn}}
+                          >预览</button>
+                          <button 
+                            onClick={() => handleDownload(file)} 
+                            className="actionBtn download-btn"
+                            style={{...styles.actionBtn}}
+                          >下载</button>
+                          <button 
+                            onClick={() => handleDelete(file.id)} 
+                            className="actionBtn delete-btn"
+                            style={{...styles.actionBtn}}
+                          >删除</button>
                         </div>
                       </td>
                     </tr>
@@ -127,7 +180,7 @@ function DocumentPage() {
 
           <br/>
           <div style={styles.uploadSection}>
-            <label htmlFor="file-upload" style={styles.uploadLabel}>
+            <label htmlFor="file-upload" style={styles.uploadLabel} className="uploadLabel">
               选择文件上传
             </label>
             <input
@@ -202,7 +255,7 @@ const styles = {
   chatBox: {
     background: '#fff',
     borderRadius: '12px',
-    width: '90%',
+    width: '100%', // 已经是90%，保持不变
     maxWidth: '900px',
     height: '90vh',
     display: 'flex',
@@ -243,6 +296,8 @@ const styles = {
     flex: 1,
     padding: '20px',
     overflowY: 'auto',
+    minWidth: '800px', // 添加最小宽度
+    width: '100%', // 确保占满父容器
   },
   uploadSection: {
     marginBottom: '20px',
@@ -292,23 +347,32 @@ const styles = {
   },
   actionBtnContainer: { // 新增：用于包裹按钮的容器样式
     display: 'flex', // 关键：横向排列
-    gap: '8px', // 按钮之间的间距
+    gap: '10px', // 增加按钮之间的间距
     alignItems: 'center', // 可选：垂直对齐
   },
   actionBtn: {
-    padding: '6px 12px',
+    padding: '6px 14px',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '6px',
     cursor: 'pointer',
-    fontSize: '14px',
-    transition: 'all 0.2s',
-    backgroundColor: '#007bff',
+    fontSize: '13px',
+    fontWeight: '500',
+    letterSpacing: '0.3px',
+    transition: 'all 0.2s ease',
     color: 'white',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   },
   emptyState: {
     textAlign: 'center',
     padding: '40px 0',
     color: '#6c757d',
+    width: '100%', // 确保宽度一致
+    minHeight: '200px', // 添加最小高度
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: '1px solid #e9ecef', // 添加边框使视觉效果更明显
+    borderRadius: '8px',
   },
   modalOverlay: {
     position: 'fixed',

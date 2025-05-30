@@ -12,10 +12,47 @@ tr:hover {
   background-color: rgba(52, 60, 207, 0.05);
 }
 
-/* 操作按钮悬停效果 */
+/* 为每种操作按钮设置基础颜色 - 更协调的色调 */
+button.actionBtn.preview-btn {
+  background-color: #6c63ff !important; /* 紫蓝色，与主题色调协调 */
+}
+
+button.actionBtn.download-btn {
+  background-color: #4d69fa !important; /* 蓝色，与主题色调协调 */
+}
+
+button.actionBtn.delete-btn {
+  background-color: #f06292 !important; /* 柔和的粉红色，不那么刺眼 */
+}
+
+/* 操作按钮基础样式 - 更现代的形状 */
+button.actionBtn {
+  border-radius: 6px !important; /* 更圆润的边角 */
+  padding: 6px 14px !important; /* 稍微宽一点 */
+  font-size: 13px !important; /* 稍微小一点的字体 */
+  font-weight: 500 !important; /* 中等粗细 */
+  letter-spacing: 0.3px !important; /* 字母间距 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important; /* 轻微阴影 */
+}
+
+/* 操作按钮悬停效果 - 更精致的动画 */
 button.actionBtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* 为每种操作按钮设置悬停颜色 - 稍微加深 */
+button.actionBtn.preview-btn:hover {
+  background-color: #5a52e0 !important;
+}
+
+button.actionBtn.download-btn:hover {
+  background-color: #3f58e0 !important;
+}
+
+button.actionBtn.delete-btn:hover {
+  background-color: #e84c7b !important;
 }
 
 /* 返回按钮悬停效果 */
