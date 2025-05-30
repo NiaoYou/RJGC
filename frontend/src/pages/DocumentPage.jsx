@@ -1,15 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './DocumentPage.css';
+import mammoth from 'mammoth';
+import { marked } from 'marked'; 
 
 function DocumentPage() {
   const [files, setFiles] = useState([]);
   const [previewFile, setPreviewFile] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
   const navigate = useNavigate();
+  const [wordHtml, setWordHtml] = useState('');
+  const wordContainerRef = useRef(null);
 
   useEffect(() => {
     const savedDocuments = JSON.parse(localStorage.getItem('documents') || '[]');
@@ -117,6 +121,48 @@ function DocumentPage() {
   // 切换下拉菜单的函数
   const toggleMenu = (id) => {
     setOpenMenuId(openMenuId === id ? null : id);
+  };
+
+  // 添加转换Word文档的函数
+  const convertWordToHtml = async (file) => {
+    try {
+      // 如果文件内容是base64格式
+      if (file.content && typeof file.content === 'string' && file.content.startsWith('data:')) {
+        // 从base64提取实际数据
+        const byteString = atob(file.content.split(',')[1]);
+        
+        // 转换为ArrayBuffer
+        const arrayBuffer = new ArrayBuffer(byteString.length);
+        const uint8Array = new Uint8Array(arrayBuffer);
+        for (let i = 0; i < byteString.length; i++) {
+          uint8Array[i] = byteString.charCodeAt(i);
+        }
+        
+        // 使用mammoth转换为HTML
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        setWordHtml(result.value);
+      } else {
+        // 如果是文本内容（如会议记录），直接使用marked转换
+        setWordHtml(marked(file.content));
+      }
+    } catch (error) {
+      console.error('转换Word文档失败:', error);
+      setWordHtml('<p style="color: red;">转换文档失败，请尝试下载后查看。</p>');
+    }
+  };
+
+  // 在预览文件变化时调用转换函数
+  useEffect(() => {
+    if (previewFile && isWordFile(previewFile)) {
+      convertWordToHtml(previewFile);
+    }
+  }, [previewFile]);
+
+  // 添加一个辅助函数，判断文件是否为Word文档
+  const isWordFile = (file) => {
+    return file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
+           file.name.endsWith('.docx') || 
+           file.name.endsWith('.doc');
   };
 
   return (
@@ -240,7 +286,7 @@ function DocumentPage() {
           <div style={styles.modal} onClick={e => e.stopPropagation()}>
             <h3 style={styles.modalTitle}>预览：{previewFile.name}</h3>
             <div style={styles.modalContent}>
-              {previewFile.encoding === 'text' ? (
+              {previewFile.encoding === 'text' && !isWordFile(previewFile) ? (
                 <div style={styles.textPreview}>
                   <ReactMarkdown
                     children={previewFile.content}
@@ -269,11 +315,36 @@ function DocumentPage() {
                 <img src={previewFile.content} alt={previewFile.name} style={styles.imagePreview} />
               ) : previewFile.type === 'application/pdf' ? (
                 <iframe src={previewFile.content} width="100%" height="500px" title="PDF预览" style={styles.pdfPreview} />
+              ) : isWordFile(previewFile) ? (
+                <div 
+                  ref={wordContainerRef}
+                  style={styles.wordPreview} 
+                  dangerouslySetInnerHTML={{ __html: wordHtml }}
+                />
               ) : (
                 <p style={styles.unsupportedFormat}>❌ 暂不支持预览该格式。</p>
               )}
             </div>
-            <button onClick={closeModal} style={styles.closeBtn}>关闭</button>
+            <button 
+              onClick={closeModal} 
+              className="back-button" // 使用与返回按钮相同的类名
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                color: 'rgb(52, 60, 207)',
+                display: 'flex',
+                alignItems: 'center',
+                transition: 'all 0.2s ease',
+                alignSelf: 'flex-end',
+                marginTop: '15px'
+              }}
+            >
+              关闭
+            </button>
           </div>
         </div>
       )}
@@ -471,22 +542,23 @@ const styles = {
     border: '1px solid #eee',
     borderRadius: '8px',
   },
+  wordPreview: {
+    maxHeight: '500px',
+    overflow: 'auto',
+    padding: '20px',
+    backgroundColor: '#fff',
+    borderRadius: '8px',
+    border: '1px solid #eee',
+    fontFamily: 'Arial, sans-serif',
+    lineHeight: '1.6',
+  },
   unsupportedFormat: {
     textAlign: 'center',
     padding: '40px 0',
     color: '#dc3545',
     fontSize: '16px',
   },
-  closeBtn: {
-    alignSelf: 'flex-end',
-    padding: '8px 16px',
-    backgroundColor: '#dc3545',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
+  // 移除原有的closeBtn样式
 };
 
 export default DocumentPage;
