@@ -12,48 +12,71 @@ tr:hover {
   background-color: rgba(52, 60, 207, 0.05);
 }
 
-/* 为每种操作按钮设置基础颜色 - 更协调的色调 */
-button.actionBtn.preview-btn {
-  background-color: #6c63ff !important; /* 紫蓝色，与主题色调协调 */
+/* 图标按钮样式 */
+.icon-btn {
+  position: relative;
+  overflow: hidden;
 }
 
-button.actionBtn.download-btn {
-  background-color: #4d69fa !important; /* 蓝色，与主题色调协调 */
+.icon-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(52, 60, 207, 0.1);
+  border-radius: 50%;
+  transform: scale(0);
+  transition: transform 0.3s ease;
 }
 
-button.actionBtn.delete-btn {
-  background-color: #f06292 !important; /* 柔和的粉红色，不那么刺眼 */
+.icon-btn:hover::after {
+  transform: scale(1);
 }
 
-/* 操作按钮基础样式 - 更现代的形状 */
-button.actionBtn {
-  border-radius: 6px !important; /* 更圆润的边角 */
-  padding: 6px 14px !important; /* 稍微宽一点 */
-  font-size: 13px !important; /* 稍微小一点的字体 */
-  font-weight: 500 !important; /* 中等粗细 */
-  letter-spacing: 0.3px !important; /* 字母间距 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important; /* 轻微阴影 */
+/* 为不同操作设置不同颜色 */
+.icon-btn.preview-btn:hover img {
+  filter: invert(40%) sepia(57%) saturate(1752%) hue-rotate(230deg) brightness(100%) contrast(101%) !important;
 }
 
-/* 操作按钮悬停效果 - 更精致的动画 */
-button.actionBtn:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-  transition: all 0.2s ease !important;
+.icon-btn.download-btn:hover img {
+  filter: invert(40%) sepia(57%) saturate(1752%) hue-rotate(230deg) brightness(100%) contrast(101%) !important;
 }
 
-/* 为每种操作按钮设置悬停颜色 - 稍微加深 */
-button.actionBtn.preview-btn:hover {
-  background-color: #5a52e0 !important;
+.icon-btn.delete-btn:hover img {
+  filter: invert(56%) sepia(75%) saturate(1852%) hue-rotate(313deg) brightness(103%) contrast(96%) !important;
 }
 
-button.actionBtn.download-btn:hover {
-  background-color: #3f58e0 !important;
+/* 悬停效果 */
+.icon-btn:hover {
+  transform: translateY(-2px);
 }
 
-button.actionBtn.delete-btn:hover {
-  background-color: #e84c7b !important;
+/* 添加悬停提示样式 */
+.icon-btn:hover::before {
+  content: attr(title);
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
 }
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+/* 确保在页面中引入Font Awesome或其他图标库 */
+/* 例如：在HTML文件中添加 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> */
 
 /* 返回按钮悬停效果 */
 .back-button:hover {
@@ -88,16 +111,33 @@ button[style*="closeBtn"]:hover {
   background: #c5c5d2;
 }
 
-/* 动画效果 */
+/* 下拉菜单样式 */
+.dropdown-btn {
+  transition: all 0.2s ease;
+}
+
+.dropdown-btn:hover {
+  background-color: rgb(46, 53, 187) !important;
+}
+
+.dropdown-item {
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(52, 60, 207, 0.1);
+}
+
+.dropdown-item.delete-item:hover {
+  color: #f06292;
+}
+
+/* 添加动画效果 */
+.dropdown-menu {
+  animation: fadeIn 0.2s ease;
+}
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-.content {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.modal {
-  animation: fadeIn 0.3s ease-out;
 }
