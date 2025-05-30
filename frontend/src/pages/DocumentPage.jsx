@@ -191,12 +191,12 @@ function DocumentPage() {
 
 const styles = {
   page: {
-    background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%)',
+    background: 'transparent',
     minHeight: '100vh',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '20px',
+    padding: '12px',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
   },
   chatBox: {
