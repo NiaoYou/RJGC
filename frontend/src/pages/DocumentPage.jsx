@@ -69,7 +69,14 @@ function DocumentPage() {
     URL.revokeObjectURL(url);
   };
 
+  // 添加调试信息，检查文件内容
   const handlePreview = (file) => {
+    console.log("预览文件:", file.name);
+    console.log("文件类型:", file.type);
+    console.log("文件编码:", file.encoding);
+    console.log("文件内容长度:", file.content ? file.content.length : 0);
+    console.log("文件内容前100个字符:", file.content ? file.content.substring(0, 100) : "无内容");
+    
     setPreviewFile(file);
   };
 

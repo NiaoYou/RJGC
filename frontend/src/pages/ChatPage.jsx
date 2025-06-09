@@ -89,12 +89,24 @@ function ChatPage() {
     const previousRole = index > 0 ? agentOrder[index - 1] : null;
     const previous = previousRole ? history[previousRole] || [] : [];
 
-    const contextMessages = previous.length
-      ? [
-          { sender: 'system', text: `🧠 以下是 "${previousRole}" 的最后对话：`, fromPrevious: true },
-          ...previous.slice(-3).map(m => ({ ...m, fromPrevious: true }))
-        ]
-      : [];
+    // 创建上下文消息
+    let contextMessages = [];
+    
+    // 如果有上一个角色的对话，添加提示和对话内容
+    if (previous.length) {
+      // 添加提示消息
+      contextMessages.push({ 
+        sender: 'system', 
+        text: `🧠 我已获取您与${agentConfigs[previousRole]?.name || previousRole}的最近3条对话内容`, 
+        fromPrevious: true 
+      });
+      
+      // 添加上一个角色的对话内容
+      contextMessages = [
+        ...contextMessages,
+        ...previous.slice(-3).map(m => ({ ...m, fromPrevious: true }))
+      ];
+    }
 
     setMessages([...contextMessages, ...current]);
     
