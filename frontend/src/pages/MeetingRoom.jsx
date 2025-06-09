@@ -40,7 +40,7 @@ const agentConfigs = {
 };
 
 function MeetingRoom() {
-  const navigate = useNavigate();
+  const  navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -71,9 +71,26 @@ function MeetingRoom() {
     const history = JSON.parse(localStorage.getItem('meeting_history') || '[]');
     if (history.length > 0) {
       setMessages(history);
+      
+      // 检查最后一条消息是否是系统提示，确定当前活动的agent
+      const lastMsg = history[history.length - 1];
+      if (lastMsg.sender === 'system' && lastMsg.isPrompt) {
+        // 从提示消息中提取当前agent
+        const agentName = lastMsg.text.match(/让(.*?)修改/)?.[1];
+        if (agentName) {
+          const agent = agents.find(a => a.name === agentName);
+          if (agent) {
+            setCurrentAgent(agent.id);
+          }
+        }
+      } else if (lastMsg.sender !== 'user' && lastMsg.sender !== 'system') {
+        // 如果最后一条消息是agent的，设置为当前agent
+        setCurrentAgent(lastMsg.sender);
+      }
     } else {
       // 初始化为空消息列表，不显示欢迎消息
       setMessages([]);
+      setCurrentAgent(null);
     }
   }, []);
 
@@ -98,17 +115,197 @@ function MeetingRoom() {
     setMessages(updatedMessages);
     saveToLocalStorage(updatedMessages);
     setInput('');
-    setIsProcessing(true);
-
-    // 启动Agent流程
-    await startAgentFlow(updatedMessages);
+    
+    // 检查是否是"下一位"指令
+    if (input.trim().toLowerCase() === "下一位" || 
+        input.trim().includes("下一位") || 
+        input.trim().includes("继续") ||
+        input.trim().includes("next")) {
+      
+      // 找出当前agent的索引
+      const currentIndex = agents.findIndex(a => a.id === currentAgent);
+      if (currentIndex >= 0 && currentIndex < agents.length - 1) {
+        // 移动到下一个agent
+        await startAgentFlow(updatedMessages, currentIndex + 1);
+      } else if (currentIndex === agents.length - 1) {
+        // 已经是最后一个agent
+        const endMsg = {
+          sender: 'system',
+          text: '✅ 所有专家已完成发言。您可以继续提问，或使用"生成会议总结"功能整理会议成果。',
+          timestamp: new Date().toISOString()
+        };
+        
+        const finalMessages = [...updatedMessages, endMsg];
+        setMessages(finalMessages);
+        saveToLocalStorage(finalMessages);
+        setCurrentAgent(null);
+      }
+    } else if (currentAgent) {
+      // 用户对当前agent的反馈，让当前agent继续回复
+      setIsProcessing(true);
+      
+      // 添加"正在思考"消息
+      const thinkingMsg = {
+        sender: currentAgent,
+        text: `${agents.find(a => a.id === currentAgent).avatar} 正在思考...`,
+        timestamp: new Date().toISOString(),
+        thinking: true
+      };
+      
+      let msgs = [...updatedMessages, thinkingMsg];
+      setMessages(msgs);
+      
+      // 调用API获取回复
+      try {
+        const agent = agents.find(a => a.id === currentAgent);
+        const config = agentConfigs[currentAgent];
+        
+        // 获取所有历史消息作为上下文
+        const context = msgs
+          .filter(m => !m.thinking)
+          .map(m => {
+            const sender = m.sender === 'user' ? '用户' : 
+                          agents.find(a => a.id === m.sender)?.name || m.sender;
+            return `${sender}: ${m.text}`;
+          })
+          .join('\n\n');
+        
+        // 创建一个空的回复消息
+        const agentMsg = {
+          sender: currentAgent,
+          text: '',
+          timestamp: new Date().toISOString(),
+          streaming: true
+        };
+        
+        // 替换"正在思考"为空的回复消息
+        msgs = msgs.filter(m => !(m.sender === currentAgent && m.thinking));
+        msgs = [...msgs, agentMsg];
+        setMessages(msgs);
+        
+        // 使用fetch API的流式响应
+        const response = await fetch(config.endpoint, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream'
+          },
+          body: JSON.stringify({ 
+            [config.bodyField]: context, 
+            stream: true,
+            mode: 'meeting_room'  // 指定为会议室模式
+          }),
+        });
+        
+        // 创建响应流读取器
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        // 读取流数据
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          // 解码并处理数据块
+          const chunk = decoder.decode(value, { stream: true });
+          
+          try {
+            // 尝试解析JSON响应
+            const lines = chunk.split('\n').filter(line => line.trim() !== '');
+            
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = JSON.parse(line.substring(6));
+                
+                // 更新消息文本
+                msgs = msgs.map(m => {
+                  if (m.sender === currentAgent && m.streaming) {
+                    return {
+                      ...m,
+                      text: m.text + (data.content || data[config.responseField] || '')
+                    };
+                  }
+                  return m;
+                });
+                
+                setMessages([...msgs]);
+              }
+            }
+          } catch (e) {
+            // 如果不是JSON格式，直接追加文本
+            msgs = msgs.map(m => {
+              if (m.sender === currentAgent && m.streaming) {
+                return {
+                  ...m,
+                  text: m.text + chunk
+                };
+              }
+              return m;
+            });
+            
+            setMessages([...msgs]);
+          }
+        }
+        
+        // 完成流式输出后，更新消息状态
+        msgs = msgs.map(m => {
+          if (m.sender === currentAgent && m.streaming) {
+            return {
+              ...m,
+              streaming: false
+            };
+          }
+          return m;
+        });
+        
+        setMessages([...msgs]);
+        saveToLocalStorage(msgs);
+        
+        // 添加系统提示，询问用户是否满意
+        const promptMsg = {
+          sender: 'system',
+          text: `${agent.avatar} ${agent.name}已完成回复。您可以：\n1. 提供反馈意见让${agent.name}修改\n2. 输入"下一位"让下一位专家继续`,
+          timestamp: new Date().toISOString(),
+          isPrompt: true
+        };
+        
+        msgs = [...msgs, promptMsg];
+        setMessages(msgs);
+        saveToLocalStorage(msgs);
+        
+        setIsProcessing(false);
+        
+      } catch (err) {
+        console.error(`${currentAgent} 处理失败:`, err);
+        
+        // 替换"正在思考"或流式消息为错误消息
+        msgs = msgs.filter(m => !(m.sender === currentAgent && (m.thinking || m.streaming)));
+        const errorMsg = {
+          sender: currentAgent,
+          text: `⚠️ 抱歉，我在处理时遇到了问题。`,
+          timestamp: new Date().toISOString(),
+          isError: true
+        };
+        
+        msgs = [...msgs, errorMsg];
+        setMessages(msgs);
+        saveToLocalStorage(msgs);
+        
+        setIsProcessing(false);
+      }
+    } else {
+      // 如果没有当前agent或是新会话，从第一个agent开始
+      await startAgentFlow(updatedMessages, 0);
+    }
   };
 
-  const startAgentFlow = async (currentMessages) => {
+  const startAgentFlow = async (currentMessages, startIndex = 0) => {
     let msgs = [...currentMessages];
+    setIsProcessing(true);
     
-    // 依次让每个Agent发言
-    for (const agent of agents) {
+    // 只让当前agent发言
+    if (startIndex < agents.length) {
+      const agent = agents[startIndex];
       setCurrentAgent(agent.id);
       
       // 添加"正在思考"消息
@@ -223,8 +420,21 @@ function MeetingRoom() {
         setMessages([...msgs]);
         saveToLocalStorage(msgs);
         
-        // 等待一小段时间，让用户有时间阅读
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // 添加系统提示，询问用户是否满意
+        const promptMsg = {
+          sender: 'system',
+          text: `${agent.avatar} ${agent.name}已完成回复。您可以：\n1. 提供反馈意见让${agent.name}修改\n2. 输入"下一位"让下一位专家继续`,
+          timestamp: new Date().toISOString(),
+          isPrompt: true
+        };
+        
+        msgs = [...msgs, promptMsg];
+        setMessages(msgs);
+        saveToLocalStorage(msgs);
+        
+        // 设置当前等待用户对哪个agent的反馈
+        setCurrentAgent(agent.id);
+        setIsProcessing(false);
         
       } catch (err) {
         console.error(`${agent.id} 处理失败:`, err);
@@ -241,11 +451,26 @@ function MeetingRoom() {
         msgs = [...msgs, errorMsg];
         setMessages(msgs);
         saveToLocalStorage(msgs);
+        
+        // 继续下一个agent
+        setIsProcessing(false);
       }
+    } else {
+      // 所有agent都已发言
+      setCurrentAgent(null);
+      setIsProcessing(false);
+      
+      // 添加会议结束提示
+      const endMsg = {
+        sender: 'system',
+        text: '✅ 所有专家已完成发言。您可以继续提问，或使用"生成会议总结"功能整理会议成果。',
+        timestamp: new Date().toISOString()
+      };
+      
+      msgs = [...msgs, endMsg];
+      setMessages(msgs);
+      saveToLocalStorage(msgs);
     }
-    
-    setCurrentAgent(null);
-    setIsProcessing(false);
   };
 
   const handleClear = () => {
@@ -273,33 +498,39 @@ function MeetingRoom() {
 
 
 const handleExportToWord = () => {
-  // 收集所有Agent的输出（过滤掉思考/错误消息）
-  const agentOutputs = messages
-    .filter(msg =>
-      agents.some(agent => msg.sender === agent.id) &&
+  // 调试：打印所有消息
+  console.log("所有消息:", messages);
+  
+  // 查找会议总结 - 使用更可靠的方式
+  let summaryMessage = messages.find(msg => msg.sender === 'system' && msg.isSummary);
+  
+  // 如果找不到带isSummary标记的消息，尝试查找最后一个非导出选项的系统消息
+  if (!summaryMessage) {
+    const systemMessages = messages.filter(msg => 
+      msg.sender === 'system' && 
+      !msg.isExportOptions && 
       !msg.thinking &&
       !msg.isError
-    )
-    .map(msg => {
-      const agent = agents.find(a => a.id === msg.sender);
-      // 过滤掉Markdown和HTML标签，只保留纯文字和换行
-      const cleanText = msg.text
-        .replace(/<[^>]*>/g, '') // 移除HTML标签
-        .replace(/[#*`~_\-+$$$$(){}|\\;]/g, '') // 移除Markdown符号
-        .replace(/\n{3,}/g, '\n\n') // 合并多个换行符为两个
-        .trim();
-      return {
-        name: agent.name,
-        content: cleanText,
-        color: agent.color
-      };
-    });
-
-  if (agentOutputs.length === 0) {
-    alert('没有可导出的Agent输出');
+    );
+    
+    if (systemMessages.length > 0) {
+      summaryMessage = systemMessages[systemMessages.length - 1];
+      console.log("使用最后一个系统消息作为总结:", summaryMessage);
+    }
+  }
+  
+  console.log("找到的会议总结:", summaryMessage);
+  
+  if (!summaryMessage) {
+    alert("请先生成会议总结");
     return;
   }
-
+  
+  if (!summaryMessage.text || summaryMessage.text.trim() === '') {
+    alert("会议总结内容为空，无法导出");
+    return;
+  }
+  
   // 创建Word文档
   const doc = new Document({
     sections: [{
@@ -307,99 +538,107 @@ const handleExportToWord = () => {
       children: [
         // 主标题
         new Paragraph({
-          text: "项目会议记录",
-          heading: "Heading1",
-          alignment: "center"
+          text: "项目会议总结"
         }),
-
-        // Agent输出内容
-        ...agentOutputs.flatMap(output => [
-          // Agent名称（普通段落 + 加粗）
+        // 空行
+        new Paragraph({}),
+        // 总结内容 - 按段落分割
+        ...summaryMessage.text.split('\n').map(para => 
           new Paragraph({
-            text: `${output.name}：`,
-            textRun: {
-              bold: true,
-              color: hexToRgb(output.color)
-            }
-          }),
-
-          // Agent内容（纯文字 + 换行）
-          new Paragraph({
-            text: output.content.replace(/\n/g, '\n\n') // 确保换行生效
+            text: para
           })
-        ])
+        )
       ]
     }]
   });
 
-  // 生成并下载Word文件
+  // 生成并保存Word文件
   Packer.toBlob(doc).then(blob => {
-    //saveAs(blob, `项目会议记录_${new Date().toISOString().replace(/[:.]/g, '-')}.docx`);
-
-    // 将文档内容保存到localStorage
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const wordContent = `# 项目会议记录 (${timestamp})\n\n${agentOutputs.map(output => `### ${output.name}\n\n${output.content}\n\n`).join('\n')}`;
-
-    const savedDocuments = JSON.parse(localStorage.getItem('documents') || '[]');
-    savedDocuments.push({
-      id: Date.now().toString(),
-      name: `项目会议记录_${timestamp}.docx`,
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      size: blob.size,
-      uploadTime: new Date().toLocaleString(),
-      content: wordContent, // 这里存储的是Markdown格式的内容，如果需要可以调整
-      encoding: 'text'
-    });
-    localStorage.setItem('documents', JSON.stringify(savedDocuments));
-
-
-    // 在页面上显示提示信息（alert）
-   alert("✅请在文档管理页面查看!");
+    const fileName = `项目会议总结_${timestamp}.docx`;
+    
+    // 直接触发下载
+    saveAs(blob, fileName);
+    
+    // 同时保存到localStorage以便在文档管理页面查看
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = function() {
+      const base64data = reader.result;
+      
+      const savedDocuments = JSON.parse(localStorage.getItem('documents') || '[]');
+      savedDocuments.push({
+        id: Date.now().toString(),
+        name: fileName,
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        size: blob.size,
+        uploadTime: new Date().toLocaleString(),
+        content: base64data,
+        encoding: 'base64'
+      });
+      
+      localStorage.setItem('documents', JSON.stringify(savedDocuments));
+      console.log("文档已保存到localStorage");
+    };
+    
+    alert("✅文档已下载并保存到文档管理页面!");
   });
 };
 
   // md
   const handleExportToMarkdown = () => {
-  // 收集所有Agent的输出（过滤掉思考/错误消息）
-  const agentOutputs = messages
-    .filter(msg =>
-      agents.some(agent => msg.sender === agent.id) &&
-      !msg.thinking &&
-      !msg.isError
-    )
-    .sort((a, b) => {
-      const order = { analyst: 0, architect: 1, developer: 2, tester: 3 };
-      return order[a.sender] - order[b.sender];
-    })
-    .map(msg => {
-      const agent = agents.find(a => a.id === msg.sender);
-      return `### ${agent.name}\n\n${msg.text}\n\n`;
-    })
-    .join('\n');
+    // 查找会议总结 - 使用更可靠的方式
+    let summaryMessage = messages.find(msg => msg.sender === 'system' && msg.isSummary);
+  
+    // 如果找不到带isSummary标记的消息，尝试查找最后一个非导出选项的系统消息
+    if (!summaryMessage) {
+      const systemMessages = messages.filter(msg => 
+        msg.sender === 'system' && 
+        !msg.isExportOptions && 
+        !msg.thinking &&
+        !msg.isError
+      );
+    
+      if (systemMessages.length > 0) {
+        summaryMessage = systemMessages[systemMessages.length - 1];
+        console.log("使用最后一个系统消息作为总结:", summaryMessage);
+      }
+    }
+  
+    if (!summaryMessage) {
+      alert("请先生成会议总结");
+      return;
+    }
+  
+    if (!summaryMessage.text || summaryMessage.text.trim() === '') {
+      alert("会议总结内容为空，无法导出");
+      return;
+    }
+  
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const fileName = `项目会议总结_${timestamp}.md`;
+    const markdownContent = `# 项目会议总结 (${timestamp})\n\n${summaryMessage.text}`;
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const markdownContent = `# 项目会议记录 (${timestamp})\n\n${agentOutputs}`;
-
-  // 保存到 localStorage
-  const savedDocuments = JSON.parse(localStorage.getItem('documents') || '[]');
-  savedDocuments.push({
-    id: Date.now().toString(), // 使用时间戳作为唯一ID
-    name: `项目会议记录_${timestamp}.md`,
-    type: 'text/markdown',
-    size: markdownContent.length,
-    uploadTime: new Date().toLocaleString(),
-    content: markdownContent,
-    encoding: 'text',
-  });
-  localStorage.setItem('documents', JSON.stringify(savedDocuments));
-
-  // 如果需要下载Word文件，可以取消下面的注释
-  /*
-  const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
-  saveAs(blob, `项目会议记录_${timestamp}.md`);
-  */
-   alert("✅请在文档管理页面查看!");
-};
+    // 创建blob并直接触发下载
+    const blob = new Blob([markdownContent], { type: 'text/markdown' });
+    saveAs(blob, fileName);
+    
+    // 同时保存到localStorage以便在文档管理页面查看
+    const savedDocuments = JSON.parse(localStorage.getItem('documents') || '[]');
+    savedDocuments.push({
+      id: Date.now().toString(),
+      name: fileName,
+      type: 'text/markdown',
+      size: markdownContent.length,
+      uploadTime: new Date().toLocaleString(),
+      content: markdownContent,
+      encoding: 'text',
+    });
+    localStorage.setItem('documents', JSON.stringify(savedDocuments));
+    console.log("Markdown文档已保存到localStorage");
+    
+    alert("✅文档已下载并保存到文档管理页面!");
+  };
 
 // 辅助函数：将十六进制颜色转换为RGB格式
   const hexToRgb = (hex) => {
@@ -409,7 +648,181 @@ const handleExportToWord = () => {
   return `rgb(${r},${g},${b})`;
 };
 
-
+// 添加会议总结功能
+const handleGenerateSummary = async () => {
+  if (messages.length < 3 || isProcessing) {
+    alert("会议内容太少或正在处理中，无法生成总结");
+    return;
+  }
+  
+  setIsProcessing(true);
+  
+  try {
+    // 收集所有消息作为上下文
+    const context = messages
+      .filter(m => !m.thinking && !m.isError)
+      .map(m => {
+        const sender = m.sender === 'user' ? '用户' : 
+                      agents.find(a => a.id === m.sender)?.name || m.sender;
+        return `${sender}: ${m.text}`;
+      })
+      .join('\n\n');
+    
+    // 创建一个"正在生成总结"的消息
+    const summaryMsg = {
+      sender: 'system',
+      text: '🔄 正在生成会议总结...',
+      timestamp: new Date().toISOString(),
+      thinking: true
+    };
+    
+    let msgs = [...messages, summaryMsg];
+    setMessages(msgs);
+    
+    // 调用API生成总结
+    const response = await fetch('http://localhost:8000/api/agent/stream', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream'
+      },
+      body: JSON.stringify({ 
+        role: 'analyst', 
+        input_text: '请根据以上会议内容，生成一份完整的会议总结，包括最终确定的需求、架构、开发计划和测试方案。不要简单复制对话内容，而是提炼出最终达成一致的方案。', 
+        mode: 'meeting_summary',
+        context: context
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API响应错误: ${response.status}`);
+    }
+    
+    // 替换"正在生成"为空的总结消息
+    msgs = msgs.filter(m => !(m.sender === 'system' && m.thinking));
+    const finalSummaryMsg = {
+      sender: 'system',
+      text: '',
+      timestamp: new Date().toISOString(),
+      streaming: true,
+      isSummary: true  // 确保这个标记存在
+    };
+    
+    msgs = [...msgs, finalSummaryMsg];
+    setMessages(msgs);
+    
+    // 处理流式响应
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let summaryText = '';  // 用于累积总结文本
+    
+    // 读取流数据
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      // 解码并处理数据块
+      const chunk = decoder.decode(value, { stream: true });
+      
+      try {
+        // 尝试解析JSON响应
+        const lines = chunk.split('\n').filter(line => line.trim() !== '');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = JSON.parse(line.substring(6));
+            const content = data.content || '';
+            summaryText += content;  // 累积总结文本
+            
+            // 更新消息文本
+            msgs = msgs.map(m => {
+              if (m.sender === 'system' && m.streaming) {
+                return {
+                  ...m,
+                  text: summaryText,  // 使用累积的文本
+                  isSummary: true  // 确保标记存在
+                };
+              }
+              return m;
+            });
+            
+            setMessages([...msgs]);
+          }
+        }
+      } catch (e) {
+        console.error("解析响应出错:", e);
+        // 如果不是JSON格式，直接追加文本
+        const content = chunk;
+        summaryText += content;
+        
+        msgs = msgs.map(m => {
+          if (m.sender === 'system' && m.streaming) {
+            return {
+              ...m,
+              text: summaryText,
+              isSummary: true
+            };
+          }
+          return m;
+        });
+        
+        setMessages([...msgs]);
+      }
+    }
+    
+    // 完成流式输出后，更新消息状态
+    msgs = msgs.map(m => {
+      if (m.sender === 'system' && m.streaming) {
+        const updatedMsg = {
+          ...m,
+          streaming: false,
+          isSummary: true  // 确保标记存在
+        };
+        console.log("会议总结生成完成:", updatedMsg.text);
+        return updatedMsg;
+      }
+      return m;
+    });
+    
+    setMessages([...msgs]);
+    saveToLocalStorage(msgs);
+    
+    // 检查总结内容是否为空
+    const generatedSummary = msgs.find(m => m.sender === 'system' && m.isSummary);
+    if (!generatedSummary || !generatedSummary.text || generatedSummary.text.trim() === '') {
+      throw new Error("生成的会议总结内容为空");
+    }
+    
+    // 添加导出选项提示
+    const exportOptionsMsg = {
+      sender: 'system',
+      text: '✅ 会议总结已生成。您可以选择导出格式：',
+      timestamp: new Date().toISOString(),
+      isExportOptions: true
+    };
+    
+    msgs = [...msgs, exportOptionsMsg];
+    setMessages(msgs);
+    saveToLocalStorage(msgs);
+    
+  } catch (err) {
+    console.error('生成会议总结失败:', err);
+    
+    // 添加错误消息
+    const errorMsg = {
+      sender: 'system',
+      text: `⚠️ 生成会议总结失败: ${err.message}`,
+      timestamp: new Date().toISOString(),
+      isError: true
+    };
+    
+    const updatedMsgs = messages.filter(m => !(m.sender === 'system' && m.thinking));
+    setMessages([...updatedMsgs, errorMsg]);
+    saveToLocalStorage([...updatedMsgs, errorMsg]);
+  } finally {
+    setIsProcessing(false);
+  }
+};
 
   return (
     <div className="meeting-page-container">
@@ -470,18 +883,30 @@ const handleExportToWord = () => {
                   )}
                   
                   <div
-                    className={`message ${msg.thinking ? 'thinking' : ''} ${msg.isError ? 'error' : ''}`}
+                    className={`message ${msg.thinking ? 'thinking' : ''} ${msg.isError ? 'error' : ''} ${msg.isPrompt ? 'prompt' : ''} ${msg.isSummary ? 'summary' : ''} ${msg.isExportOptions ? 'export-options' : ''}`}
                     style={{
                       borderLeftColor: !isUserMessage ? sender.color : 'transparent'
                     }}
                   >
                     {msg.thinking ? (
                       <div>{msg.text}</div>
+                    ) : msg.isExportOptions ? (
+                      <div className="export-buttons">
+                        <div>✅ 会议总结已生成。您可以选择导出格式：</div>
+                        <div className="export-options-buttons">
+                          <button onClick={handleExportToMarkdown} className="export-button">
+                            Markdown格式
+                          </button>
+                          <button onClick={handleExportToWord} className="export-button">
+                            Word格式
+                          </button>
+                        </div>
+                      </div>
                     ) : (
                       <div className="markdown-content" dangerouslySetInnerHTML={{ __html: marked(msg.text) }} />
                     )}
                     
-                    {!msg.thinking && (
+                    {!msg.thinking && !msg.isPrompt && !msg.isExportOptions && (
                       <button 
                         onClick={() => handleCopy(msg.text, idx)}
                         className={`copy-button ${copiedId === idx ? 'copied' : ''}`}
@@ -505,7 +930,13 @@ const handleExportToWord = () => {
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={isProcessing ? "请等待所有团队成员回复..." : "请输入您的项目需求..."}
+            placeholder={
+              isProcessing 
+                ? "请等待专家回复..." 
+                : currentAgent 
+                  ? `请对${agents.find(a => a.id === currentAgent)?.name || '专家'}的回复提供反馈，或输入"下一位"继续` 
+                  : "请输入您的项目需求..."
+            }
             className="input-textarea"
             disabled={isProcessing}
             onKeyDown={(e) => {
@@ -525,17 +956,10 @@ const handleExportToWord = () => {
           </button>
 
           <button
-              onClick={handleExportToWord}
-              className="send-button"
-              disabled={isProcessing}>
-          生成会议记录(word)
-          </button>
-
-          <button
-              onClick={handleExportToMarkdown}
-              className="send-button"
-              disabled={isProcessing}>
-          生成会议记录(Markdown)
+            onClick={handleGenerateSummary}
+            className="send-button"
+            disabled={isProcessing || messages.length < 3}>
+            生成会议总结
           </button>
         </div>
       </div>
