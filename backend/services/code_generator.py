@@ -9,7 +9,7 @@ client = OpenAI(
     base_url="https://api.deepseek.com",  # DeepSeek API地址
 )
 
-def call_llm(prompt: str, system_prompt: str = "你是一个资深的后端开发师") -> str:
+def call_llm(prompt: str, system_prompt: str = "你是一个资深的前后端全栈开发师") -> str:
     try:
         completion = client.chat.completions.create(
             model="deepseek-chat",  # 使用DeepSeek-V3模型
@@ -24,7 +24,7 @@ def call_llm(prompt: str, system_prompt: str = "你是一个资深的后端开�
         raise RuntimeError(f"模型调用失败：{e}")
 
 def generate_module_code(description: str) -> str:
-    prompt = f"""你是一个资深后端开发，请根据以下模块描述生成 FastAPI 模块代码，包含路由和服务逻辑。
+    prompt = f"""你是一个前后端全栈开发，请根据以下模块描述生成 FastAPI 模块代码，包含路由和服务逻辑。
 模块描述：
 {description}
 
@@ -34,7 +34,7 @@ def generate_module_code(description: str) -> str:
 
 async def generate_module_code_stream(description: str):
     """流式生成代码"""
-    prompt = f"""你是一个资深后端开发，请根据以下模块描述生成 FastAPI 模块代码，包含路由和服务逻辑。
+    prompt = f"""你是一个前后端全栈开发，请根据以下模块描述生成 FastAPI 模块代码，包含路由和服务逻辑。
 模块描述：
 {description}
 
@@ -44,7 +44,7 @@ async def generate_module_code_stream(description: str):
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=[
-                {"role": "system", "content": "你是一个资深的后端开发师"},
+                {"role": "system", "content": "你是一个资深的前后端全栈开发师"},
                 {"role": "user", "content": prompt}
             ],
             stream=True  # 启用流式输出

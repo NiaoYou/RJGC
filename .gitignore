@@ -20,3 +20,30 @@ node_modules/.cache-*
 node_modules/.cache/react/
 
 .idea
+# 忽略 node_modules
+node_modules/
+
+# 忽略 build 或 dist 输出目录
+build/
+dist/
+
+# 忽略日志文件
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 忽略本地环境文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 忽略 VSCode 设置（可选）
+.vscode/
+
+# 忽略缓存
+.cache/
+.next/
+out/
+coverage/
