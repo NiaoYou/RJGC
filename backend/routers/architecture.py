@@ -8,13 +8,15 @@ router = APIRouter()
 @router.post("/", response_model=ArchGenOutput)
 def generate(input_data: ArchGenInput):
     try:
+        conversation_id = input_data.conversation_id or "default"
+
         if input_data.stream:
             return StreamingResponse(
-                generate_architecture_stream(input_data.requirement_text),
+                generate_architecture_stream(input_data.requirement_text, conversation_id),
                 media_type="text/event-stream"
             )
         else:
-            architecture, db_schema = generate_architecture(input_data.requirement_text)
+            architecture, db_schema = generate_architecture(input_data.requirement_text, conversation_id)
             return {
                 "architecture": architecture,
                 "database_design": db_schema

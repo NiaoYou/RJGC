@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Literal, Optional
 from datetime import datetime
+from typing import Optional
 
 
 class RequirementCreate(BaseModel):
@@ -30,3 +31,4 @@ class RequirementOut(BaseModel):
 
     class Config:
         orm_mode = True
+
