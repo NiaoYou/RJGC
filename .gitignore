@@ -47,3 +47,7 @@ yarn-error.log*
 .next/
 out/
 coverage/
+
+.idea
+.DS_Store
+
